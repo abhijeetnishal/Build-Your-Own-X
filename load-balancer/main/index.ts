@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import httpProxy from 'http-proxy'
 import { createServer } from 'http'
+import axios from 'axios';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -21,25 +22,43 @@ app.use(cookieParser());
 const port = process.env.PORT || 8000;
 
 //This will allow the user in the frontend to consume the APIs that you have created without any problem.
-app.use(cors({ credentials: true, origin: [''] }));
+app.use(cors());
 
 
 const proxy = httpProxy.createProxyServer();
 
-// Define your backend servers with health check URLs.
+//Define your backend servers with health check status.
 const backendServers = [
   { url: 'http://localhost:8001', isHealthy: true },
   { url: 'http://localhost:8002', isHealthy: true },
   { url: 'http://localhost:8003', isHealthy: true },
 ];
 
+const HEALTH_CHECK_INTERVAL = 5000; // 5 seconds
+
+function performHealthCheck(server: any) {
+  axios
+    .get(`${server.url}/health`)
+    .then(() => {
+      server.isHealthy = true;
+    })
+    .catch(() => {
+      server.isHealthy = false;
+    });
+}
+
+//Periodically check the health of the backend servers.
+setInterval(() => {
+  backendServers.forEach(performHealthCheck);
+}, HEALTH_CHECK_INTERVAL);
+
 // Round-robin load balancing middleware with health check and error handling.
 let currentServerIndex = 0;
 
-app.use((req, res, next) => {
+app.use((req, res) => {
   let retries = 0;
 
-  const getNextServer: any = () => {
+  function getNextServer() {
     if (retries < backendServers.length) {
       const server = backendServers[currentServerIndex];
       currentServerIndex = (currentServerIndex + 1) % backendServers.length;
@@ -56,9 +75,10 @@ app.use((req, res, next) => {
 
   const targetServer = getNextServer();
 
-  if (targetServer) {
+  if(targetServer){
     proxy.web(req, res, { target: targetServer.url });
-  } else {
+  } 
+  else {
     res.status(503).send('All backend servers are unhealthy');
   }
 });

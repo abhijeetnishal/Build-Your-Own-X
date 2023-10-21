@@ -2,6 +2,10 @@ import express from 'express'
 
 const app = express();
 
+app.get('/health', (req, res) => {
+  res.status(200).json('server-1');
+});
+
 app.get('/', (req, res) => {
   res.send('Backend Server 1');
 });

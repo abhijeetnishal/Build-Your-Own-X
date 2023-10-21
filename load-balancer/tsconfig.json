@@ -10,8 +10,8 @@
         "outDir": "dist",
         "baseUrl": ".",
         "paths": {
-            "*": ["node_modules/*", "src/types/*"]
+            "*": ["node_modules/*", "main/types/*"]
         }
     },
-    "include": ["./src/**/*"]
+    "include": ["main/**/*", "server-3/server-3.ts", "server-2/server-2.ts", "server-1/server-1.ts"]
 }

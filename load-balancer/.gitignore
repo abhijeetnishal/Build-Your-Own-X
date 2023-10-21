@@ -1,2 +1,5 @@
-node_modules
+main/node_modules
+server-1/node_modules
+server-2/node_modules
+server-3/node_modules
 .env
