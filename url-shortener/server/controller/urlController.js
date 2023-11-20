@@ -1,7 +1,6 @@
 const urlModel = require('../model/urlSchema');
 const validUrl = require('valid-url');
 const uniqueString = require('../utils/utils')
-
  
 const getSpecificUrl = async (req, res) => {
     try{
@@ -39,7 +38,7 @@ const createUrl = async (req, res) => {
             if(urlExist){
                 //If exist then simply return the shortId instead of creating new one
                 const shortId = urlExist.shortId;
-                res.status(201).json(`http://localhost:4000/${shortId}`);
+                res.status(201).json(`${process.env.host_url}/${shortId}`);
             }
 
             else{
@@ -54,7 +53,7 @@ const createUrl = async (req, res) => {
                 await newUrl.save();
                 
                 //send shorturl to client
-                res.status(201).json(`http://localhost:4000/${shortId}`);
+                res.status(201).json(`${process.env.host_url}/${shortId}`);
             }
         }
         catch(error){

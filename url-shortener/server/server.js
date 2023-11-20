@@ -21,12 +21,16 @@ const dbConnect = require("./model/dbConnect");
 // execute database connection 
 dbConnect();  
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 8080;
+
+const urlRouter = require('./routes/urlRoutes')
+app.use(urlRouter);
+
+app.get('/',(req, res)=>{
+    return res.status(200).json('Server is live');
+})
 
 //create a server
 app.listen(port, (req, res) => {
     console.log('server listening at port '+ port);
 });
-
-const urlRouter = require('./routes/urlRoutes')
-app.use(urlRouter);
