@@ -32,6 +32,7 @@ const signup = asyncMiddleware(
                 //400 - Bad request
                 return next({
                     statusCode: 400,
+                    success: false,
                     message: "password and confirm password not matches",
                 });
             } else {
@@ -42,6 +43,7 @@ const signup = asyncMiddleware(
                     //400 - Bad request
                     return next({
                         statusCode: 400,
+                        success: false,
                         message: "username already registered",
                     });
                 } else {
@@ -56,9 +58,9 @@ const signup = asyncMiddleware(
                             password: hashedPassword,
                         });
 
-                        //created(201)
                         return next({
-                            statusCode: 201,
+                            statusCode: 200,
+                            success: true,
                             message: "user registered successfully",
                             data: createUser,
                         });
@@ -66,6 +68,7 @@ const signup = asyncMiddleware(
                         //if password is not strong 400(Bad request)
                         return next({
                             statusCode: 400,
+                            success: false,
                             message:
                                 "password contains at least 1 uc, 1 lc, 1 digit and 1 sc",
                         });
@@ -74,6 +77,7 @@ const signup = asyncMiddleware(
             }
         } catch (error) {
             return next({
+                success: false,
                 statusCode: 500,
                 message: error.message,
             });
