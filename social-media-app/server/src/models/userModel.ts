@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import dbConnect from "../config/mongoDBConnect";
 
 //create a userSchema
 const UserSchema = new mongoose.Schema({

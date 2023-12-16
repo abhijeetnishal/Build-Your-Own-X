@@ -7,6 +7,7 @@ import redisConnect from "../config/redisConnect";
 import postSchema from "../models/postModel";
 import { validatePassword } from "../helper/commonHelper";
 import asyncMiddleware from "../middlewares/async";
+import getUserDetails from "../service/userService";
 
 /*
 1. Take user data: {username, email, password, etc}
@@ -32,18 +33,16 @@ const signup = asyncMiddleware(
                 //400 - Bad request
                 return next({
                     statusCode: 400,
-                    success: false,
                     message: "password and confirm password not matches",
                 });
             } else {
-                const userExist = await userSchema.findOne({ userName: userName });
+                const userExist = await getUserDetails(userName);
 
                 //check if user already registered or not
                 if (userExist) {
                     //400 - Bad request
                     return next({
                         statusCode: 400,
-                        success: false,
                         message: "username already registered",
                     });
                 } else {
@@ -60,7 +59,6 @@ const signup = asyncMiddleware(
 
                         return next({
                             statusCode: 200,
-                            success: true,
                             message: "user registered successfully",
                             data: createUser,
                         });
@@ -68,7 +66,6 @@ const signup = asyncMiddleware(
                         //if password is not strong 400(Bad request)
                         return next({
                             statusCode: 400,
-                            success: false,
                             message:
                                 "password contains at least 1 uc, 1 lc, 1 digit and 1 sc",
                         });
@@ -77,7 +74,6 @@ const signup = asyncMiddleware(
             }
         } catch (error) {
             return next({
-                success: false,
                 statusCode: 500,
                 message: error.message,
             });
@@ -93,59 +89,67 @@ const signup = asyncMiddleware(
 5. If present, then check password is matched or not if matched logged in, else password doesn't match.
 6. Create a token using jwt for authentication and authorization.
 */
-const login = asyncMiddleware(async (req: Request, res: Response) => {
-    try {
-        //taking user data from client
-        const { userName, password } = req.body;
+const login = asyncMiddleware(
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            //taking user data from client
+            const { userName, password } = req.body;
 
-        //validate input
-        if (!userName || !password) {
-            //Bad request (400)
-            return res.status(400).json({ message: "enter required input fields" });
-        } else {
-            const userExist = await userSchema.findOne({ userName: userName });
-
-            //check if user registered or not
-            if (!userExist) {
-                return res.status(400).json({ message: "user not registered" });
+            //validate input
+            if (!userName || !password) {
+                //Bad request (400)
+                return next({
+                    statusCode: 400,
+                    message: "enter required details",
+                });
             } else {
-                //compare the password saved in DB and entered by user.
-                const matchPassword: boolean = await bcrypt.compare(
-                    password,
-                    userExist.password
-                );
+                const userExist = await getUserDetails(userName);
 
-                //if password doesn't match
-                if (!matchPassword) {
-                    //401 - unauthorized
-                    return res.status(401).json({ message: "incorrect password" });
+                //check if user registered or not
+                if (!userExist) {
+                    return next({
+                        statusCode: 401,
+                        message: "User doesn't exist",
+                    });
                 } else {
-                    //get userId
-                    const objectId = userExist._id;
-                    const userId = objectId.toHexString();
-
-                    //generate access token
-                    const accessToken = jwt.sign(
-                        { userId },
-                        process.env.ACCESS_TOKEN_SECRET as string
+                    //compare the password saved in DB and entered by user.
+                    const matchPassword: boolean = await bcrypt.compare(
+                        password,
+                        userExist.password
                     );
 
-                    //create cookie
-                    return res
-                        .cookie(
-                            "user_cookies",
-                            { accessToken, userId },
-                            { sameSite: "none", secure: true }
-                        )
-                        .json("user logged in");
+                    //if password doesn't match
+                    if (!matchPassword) {
+                        //401 - unauthorized
+                        return next({
+                            statusCode: 401,
+                            message: "incorrect password",
+                        });
+                    } else {
+                        //get userId
+                        const objectId = userExist._id;
+                        const userId = objectId.toHexString();
+
+                        //generate access token
+                        const accessToken = jwt.sign(
+                            { userId },
+                            process.env.ACCESS_TOKEN_SECRET as string
+                        );
+
+                        return next({
+                            statusCode: 200,
+                            message: "user logged-in",
+                            data: {
+                                userName: userName,
+                                authToken: accessToken
+                            }
+                        });
+                    }
                 }
             }
-        }
-    } catch (error) {
-        console.log(error);
-        res.status(500).json("internal server error: " + error);
+        } catch (error) { }
     }
-});
+);
 
 //clear the cookie to logout
 const logout = (req: Request, res: Response) => {

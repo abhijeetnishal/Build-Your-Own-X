@@ -1,13 +1,14 @@
 import express from "express";
 import userRouter from './user';
-import error from "../middlewares/error";
+import errorMiddleware from "../middlewares/error";
 
+// Create an express instance
 const app = express();
 
 // User router  
 app.use('/api/v1/user', userRouter);
 
 // Error middleware
-app.use(error);
+app.use(errorMiddleware);
 
 module.exports = app;

@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import dbConnect from './config/mogoDBConnect';
+import dbConnect from './config/mongoDBConnect';
 
 // Configure env
 dotenv.config();
@@ -33,7 +33,7 @@ const corsOptions = {
 };
 
 // This will allow the user in the frontend to consume the APIs that you have created without any problem.
-app.use(cors(corsOptions));  
+app.use(cors(corsOptions));
 
 // Disable X-Powered-By Header
 app.disable("x-powered-by");
@@ -45,7 +45,7 @@ dbConnect();
 
 // Get request when server is live
 app.get('/', (req: Request, res: Response) => {
-    res.status(200).json('Server is Live');
+  res.status(200).json('Server is Live');
 })
 
 // All API endpoints
@@ -53,5 +53,5 @@ app.use(require('./routes/index'))
 
 // Listen the server
 app.listen(port, () => {
-    console.log('Server listening at port ' + port);
+  console.log('Server listening at port ' + port);
 })
