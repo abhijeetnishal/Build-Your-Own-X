@@ -59,13 +59,12 @@ const SignUp = () => {
 
   useEffect(() => {
     if (data && data.code) {
-      console.log(data);
-      const { code, data: result } = data;
+      const { code, message } = data;
 
       if (code === 200) {
-        console.log(code);
         router.push("/login");
       }
+      setMessage(message);
     }
   }, [data, isError]);
 
