@@ -36,7 +36,7 @@ const signup = asyncMiddleware(
                     message: "password and confirm password not matches",
                 });
             } else {
-                const userExist = await getUserDetails(userName);
+                const userExist = await getUserDetails({ userName: userName });
 
                 //check if user already registered or not
                 if (userExist) {
@@ -103,7 +103,7 @@ const login = asyncMiddleware(
                     message: "enter required details",
                 });
             } else {
-                const userExist = await getUserDetails(userName);
+                const userExist = await getUserDetails({ userName: userName });
 
                 //check if user registered or not
                 if (!userExist) {
@@ -141,8 +141,9 @@ const login = asyncMiddleware(
                             message: "user logged-in",
                             data: {
                                 userName: userName,
-                                authToken: accessToken
-                            }
+                                userId: userId,
+                                authToken: accessToken,
+                            },
                         });
                     }
                 }
@@ -151,28 +152,45 @@ const login = asyncMiddleware(
     }
 );
 
-//clear the cookie to logout
-const logout = (req: Request, res: Response) => {
-    return res.clearCookie("user_cookies").json("user logged out");
-};
+const profileDetails = asyncMiddleware(
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            // Get user Id from params
+            const userId = req.params.id;
 
-//(follower/following) controller
-const profileDetails = async (req: Request, res: Response) => {
-    try {
-        //get user Id from cookies
-        const userId = req.cookies.user_cookies.userId;
+            // Check user id exists or not
+            if (userId) {
+                // Check user exists or not
+                const userExist = await userSchema.findOne({ _id: userId });
 
-        //get profile data
-        const profileData = await userSchema.findOne({ _id: userId });
-
-        return res
-            .status(201)
-            .json({ message: "follower list: ", data: profileData });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "internal server error: " + error });
+                if (userExist) {
+                    return next({
+                        statusCode: 200,
+                        message: "User details",
+                        data: {
+                            userName: userExist.userName
+                        },
+                    });
+                } else {
+                    return next({
+                        statusCode: 401,
+                        message: "User doesn't exist",
+                    });
+                }
+            } else {
+                return next({
+                    statusCode: 400,
+                    message: "User Id is not present",
+                });
+            }
+        } catch (error) {
+            return next({
+                statusCode: 400,
+                message: error.message,
+            });
+        }
     }
-};
+);
 
 const followerDetails = async (req: Request, res: Response) => {
     try {
@@ -476,7 +494,6 @@ const deleteSpecificPost = async (req: Request, res: Response) => {
 export {
     signup,
     login,
-    logout,
     profileDetails,
     followerDetails,
     followingDetails,

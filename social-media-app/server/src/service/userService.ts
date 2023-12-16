@@ -1,9 +1,9 @@
 import userSchema from "../models/userModel";
 
-const getUserDetails = (userName: string) => {
+const getUserDetails = (query: object) => {
     return new Promise(
         async (resolve: (value?: any) => void, reject: (reason?: any) => void) => {
-            const user = userSchema.findOne({ userName: userName });
+            const user = userSchema.findOne(query);
 
             if (user) {
                 resolve(user);

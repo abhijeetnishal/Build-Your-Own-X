@@ -4,7 +4,6 @@ import isAuthenticated from '../middlewares/auth';
 import {
     signup,
     login,
-    logout,
     profileDetails,
     followerDetails,
     followingDetails,
@@ -27,12 +26,9 @@ userRouter.post('/signup', signup);
 // Create an endpoint to login a user.
 userRouter.post('/login', login);
 
-// Create an endpoint to logout a user
-userRouter.post('/logout', logout);
-
 // isAuthenticated is a middleware to check user is authenticated or not
 // Create an endpoint to get profile details.
-userRouter.get('/details', isAuthenticated, profileDetails)
+userRouter.get('/details/:id', isAuthenticated, profileDetails)
 
 // Create an endpoint to get follower list.
 userRouter.get('/follower', isAuthenticated, followerDetails);
