@@ -1,9 +1,8 @@
 import mongoose from "mongoose";
-import dbConnect from "../config/mongoDBConnect";
 
-//create a userSchema
+// Create a userSchema
 const UserSchema = new mongoose.Schema({
-    //Specify how the fields should work by adding some mongoose option:
+    // Specify how the fields should work by adding some mongoose option:
     userName: {
         type: String,
         require: true,
@@ -21,7 +20,7 @@ const UserSchema = new mongoose.Schema({
     },
 }, { timestamps: true })
 
-//this will create a table or collection if there is no table with that name already.
+// This will create a table or collection if there is no table with that name already.
 const userSchema = mongoose.models.User || mongoose.model("User", UserSchema);
 
 export default userSchema;

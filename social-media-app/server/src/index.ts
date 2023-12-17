@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express';
-import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import dbConnect from './config/mongoDBConnect';
@@ -12,9 +11,6 @@ const app = express();
 
 // To parse the incoming requests with JSON we are using express.json() which is a built-in middleware function in Express.
 app.use(express.json());
-
-// The cookie-parser middleware is used to parse cookies from incoming requests, making them available in the req.cookies object.
-app.use(cookieParser());
 
 // Define port
 const port = process.env.port || 8080;

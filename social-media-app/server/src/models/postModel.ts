@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 
-//create a postSchema
+// Create a postSchema
 const PostSchema = new mongoose.Schema({
-    //Specify how the fields should work by adding some mongoose option:
+    // Specify how the fields should work by adding some mongoose option:
     postContent: {
         type: String,
         default: ''
@@ -15,7 +15,7 @@ const PostSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
-    //foreign key
+    // Foreign key
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -23,7 +23,7 @@ const PostSchema = new mongoose.Schema({
     }
 }, { timestamps: true })
 
-//this will create a table or collection if there is no table with that name already.
+// This will create a table or collection if there is no table with that name already.
 const postSchema = mongoose.models.Post || mongoose.model("Post", PostSchema);
 
 export default postSchema;

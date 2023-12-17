@@ -8,6 +8,8 @@ import postSchema from "../models/postModel";
 import { validatePassword } from "../helper/commonHelper";
 import asyncMiddleware from "../middlewares/async";
 import getUserDetails from "../service/userService";
+import { savePost, getAllPosts } from "../service/postService";
+import { isValidObjectId } from "mongoose";
 
 /*
 1. Take user data: {username, email, password, etc}
@@ -18,19 +20,19 @@ import getUserDetails from "../service/userService";
 */
 const signup = asyncMiddleware(
     async (req: Request, res: Response, next: NextFunction) => {
-        //taking user data from client
+        // Taking user data from client
         const { userName, password, confirmPassword } = req.body;
 
-        //using try catch for error handling
+        // Using try catch for error handling
         try {
             if (!userName || !password || !confirmPassword) {
-                //Bad request (400)
+                // Bad request (400)
                 return next({
                     statusCode: 400,
                     message: "enter required details",
                 });
             } else if (password !== confirmPassword) {
-                //400 - Bad request
+                // 400 - Bad request
                 return next({
                     statusCode: 400,
                     message: "password and confirm password not matches",
@@ -38,7 +40,7 @@ const signup = asyncMiddleware(
             } else {
                 const userExist = await getUserDetails({ userName: userName });
 
-                //check if user already registered or not
+                // Check if user already registered or not
                 if (userExist) {
                     //400 - Bad request
                     return next({
@@ -46,24 +48,25 @@ const signup = asyncMiddleware(
                         message: "username already registered",
                     });
                 } else {
-                    //if password is strong
+                    // If password is strong
                     if (validatePassword(password)) {
-                        //hash the password
+                        // Hash the password
                         const hashedPassword = await bcrypt.hash(password, 10);
 
-                        //create a new user in DB
+                        // Create a new user in DB
                         const createUser = await userSchema.create({
                             userName: userName,
                             password: hashedPassword,
                         });
 
                         return next({
+                            success: true,
                             statusCode: 200,
                             message: "user registered successfully",
                             data: createUser,
                         });
                     } else {
-                        //if password is not strong 400(Bad request)
+                        // If password is not strong 400(Bad request)
                         return next({
                             statusCode: 400,
                             message:
@@ -92,12 +95,12 @@ const signup = asyncMiddleware(
 const login = asyncMiddleware(
     async (req: Request, res: Response, next: NextFunction) => {
         try {
-            //taking user data from client
+            // Taking user data from client
             const { userName, password } = req.body;
 
-            //validate input
+            // Validate input
             if (!userName || !password) {
-                //Bad request (400)
+                // Bad request (400)
                 return next({
                     statusCode: 400,
                     message: "enter required details",
@@ -105,38 +108,39 @@ const login = asyncMiddleware(
             } else {
                 const userExist = await getUserDetails({ userName: userName });
 
-                //check if user registered or not
+                // Check if user registered or not
                 if (!userExist) {
                     return next({
                         statusCode: 401,
                         message: "User doesn't exist",
                     });
                 } else {
-                    //compare the password saved in DB and entered by user.
+                    // Compare the password saved in DB and entered by user.
                     const matchPassword: boolean = await bcrypt.compare(
                         password,
                         userExist.password
                     );
 
-                    //if password doesn't match
+                    // If password doesn't match
                     if (!matchPassword) {
-                        //401 - unauthorized
+                        // 401 - unauthorized
                         return next({
                             statusCode: 401,
                             message: "incorrect password",
                         });
                     } else {
-                        //get userId
+                        // Get userId
                         const objectId = userExist._id;
                         const userId = objectId.toHexString();
 
-                        //generate access token
+                        // Generate access token
                         const accessToken = jwt.sign(
-                            { userId },
+                            { userId: userId, userName: userName },
                             process.env.ACCESS_TOKEN_SECRET as string
                         );
 
                         return next({
+                            success: true,
                             statusCode: 200,
                             message: "user logged-in",
                             data: {
@@ -148,7 +152,12 @@ const login = asyncMiddleware(
                     }
                 }
             }
-        } catch (error) { }
+        } catch (error) {
+            return next({
+                statusCode: 500,
+                message: error.message,
+            });
+        }
     }
 );
 
@@ -160,21 +169,31 @@ const profileDetails = asyncMiddleware(
 
             // Check user id exists or not
             if (userId) {
-                // Check user exists or not
-                const userExist = await userSchema.findOne({ _id: userId });
+                // Check if Object id is valid or not
+                if (isValidObjectId(userId)) {
+                    // Check user exists or not
+                    const userExist = await userSchema.findOne({ _id: userId });
 
-                if (userExist) {
-                    return next({
-                        statusCode: 200,
-                        message: "User details",
-                        data: {
-                            userName: userExist.userName
-                        },
-                    });
+                    if (userExist) {
+                        return next({
+                            success: true,
+                            statusCode: 200,
+                            message: "User details",
+                            data: {
+                                userId: userExist._id,
+                                userName: userExist.userName,
+                            },
+                        });
+                    } else {
+                        return next({
+                            statusCode: 401,
+                            message: "User doesn't exist",
+                        });
+                    }
                 } else {
                     return next({
                         statusCode: 401,
-                        message: "User doesn't exist",
+                        message: "Invalid mongo object id",
                     });
                 }
             } else {
@@ -194,13 +213,13 @@ const profileDetails = asyncMiddleware(
 
 const followerDetails = async (req: Request, res: Response) => {
     try {
-        //get user Id from cookies
-        const userId = req.cookies.user_cookies.userId;
+        // Get user Id from req
+        const userId = req.params.id;
 
-        //get followers list
+        // Get followers list
         const followersList = await relationshipSchema.find({ followerId: userId });
 
-        //get followers Id
+        // Get followers Id
         let followersId: Object[] = [];
         followersList.map((follower) => {
             followersId.push(follower.followingId);
@@ -208,7 +227,7 @@ const followerDetails = async (req: Request, res: Response) => {
 
         const followersDetails: Object[] = [];
 
-        //get usernames from followers id
+        // Get usernames from followers id
         for (const id of followersId) {
             const userDetails = await userSchema.findOne({ _id: id });
             followersDetails.push({ userDetails, userId });
@@ -348,85 +367,124 @@ const getAllFollowingUsersPosts = async (req: Request, res: Response) => {
     }
 };
 
-const getAllUserPosts = async (req: Request, res: Response) => {
-    try {
-        //get userId from cookies
-        const userId = req.cookies.user_cookies.userId;
+const getUserPosts = asyncMiddleware(
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            // Get userId from req
+            const userId = req.params.id;
 
-        //get client from redisConnect.ts file
-        const client = await redisConnect();
+            // Check if Object id is valid or not
+            if (isValidObjectId(userId)) {
+                // Get client from redisConnect.ts file
+                const client = await redisConnect();
 
-        //using caching for all posts
-        //check if value is present in Redis or not
-        const dataCached = await client.get("user_posts_cache_" + userId);
+                // Using caching for all posts
+                // Check if value is present in cache or not
+                const dataCached = await client.get("user_posts_cache_" + userId);
 
-        //if value is present(cache hit)
-        if (dataCached) {
-            //parse the value from string to (arr of obj)
-            const cachedData = JSON.parse(dataCached);
+                // If value is present(cache hit)
+                if (dataCached) {
+                    // Parse the value from string to (arr of obj)
+                    const cachedData = JSON.parse(dataCached);
 
-            //return the cached data instead from DB
-            return res.status(200).json(cachedData);
-        } else {
-            //get following user data
-            const userPosts = await postSchema
-                .find({ userId: userId })
-                .sort({ updatedAt: -1 });
+                    // Return the cached data instead from DB
+                    return next({
+                        success: true,
+                        statusCode: 200,
+                        data: cachedData,
+                        message: "User posts",
+                    });
+                } else {
+                    // Get user posts
+                    const userPosts = await getAllPosts({ userId: userId });
 
-            //store the data in Redis(key, value) with options
-            await client.set(
-                "user_posts_cache_" + userId,
-                JSON.stringify(userPosts),
-                {
-                    //set expiration time
-                    EX: 300,
-                    //not exist
-                    NX: true,
+                    if (userPosts.length) {
+                        // Store the data in Redis(key, value) with options
+                        await client.set(
+                            "user_posts_cache_" + userId,
+                            JSON.stringify(userPosts),
+                            {
+                                //set expiration time
+                                EX: 300,
+                                //not exist
+                                NX: true,
+                            }
+                        );
+                    }
+                    next({
+                        success: true,
+                        statusCode: 200,
+                        data: userPosts,
+                        message: "Users posts",
+                    });
                 }
-            );
-
-            res.status(200).json({ message: "all users posts: ", data: userPosts });
-        }
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "internal server error: " + error });
-    }
-};
-
-const createPost = async (req: Request, res: Response) => {
-    try {
-        //get data from client
-        const { content, image, video } = req.body;
-
-        //get userId from cookies
-        const userId = req.cookies.user_cookies.userId;
-
-        if (!content) {
-            //Bad request (400)
-            res.status(400).json("enter all required data");
-        } else {
-            //update post using postId
-            const newPost = new postSchema({
-                postContent: content,
-                postImage: image,
-                postVideo: video,
-                userId: userId,
+            } else {
+                return next({
+                    statusCode: 401,
+                    message: "Invalid mongo object id",
+                });
+            }
+        } catch (error) {
+            return next({
+                statusCode: 500,
+                message: error.message,
             });
-            await newPost.save();
-
-            //get client from redisConnect.ts file
-            const client = await redisConnect();
-
-            //invalidate cache
-            client.del("user_posts_cache_" + userId);
-
-            res.status(201).json({ message: "post created", data: newPost });
         }
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "internal server error\n" + error });
     }
-};
+);
+
+const createPost = asyncMiddleware(
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            // Get userId from req
+            const userId = req.params.id;
+
+            // Check if Object id is valid or not
+            if (isValidObjectId(userId)) {
+                // Get data from req
+                const { content } = req.body;
+
+                // Check content is present or not
+                if (!content) {
+                    // Bad request (400)
+                    return next({
+                        statusCode: 400,
+                        message: "enter content data",
+                    });
+                } else {
+                    // Create post
+                    const newPost = await savePost({
+                        postContent: content,
+                        userId: userId,
+                    });
+
+                    // Get client from redisConnect.ts file
+                    const client = await redisConnect();
+
+                    // Invalidate cache
+                    client.del("user_posts_cache_" + userId);
+
+                    return next({
+                        success: true,
+                        statusCode: 200,
+                        message: "Post created",
+                        data: newPost,
+                    });
+                }
+            } else {
+                return next({
+                    statusCode: 401,
+                    message: "Invalid mongo object id",
+                });
+            }
+        } catch (error) {
+            return next({
+                statusCode: 500,
+                message: error.message,
+            });
+        }
+    }
+);
 
 const updateSpecificPost = async (req: Request, res: Response) => {
     try {
@@ -500,7 +558,7 @@ export {
     addFollowerFollowing,
     deleteFollowerFollowing,
     getAllFollowingUsersPosts,
-    getAllUserPosts,
+    getUserPosts,
     createPost,
     updateSpecificPost,
     deleteSpecificPost,

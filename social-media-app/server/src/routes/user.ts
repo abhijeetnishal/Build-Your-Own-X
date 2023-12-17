@@ -10,7 +10,7 @@ import {
     addFollowerFollowing,
     deleteFollowerFollowing,
     getAllFollowingUsersPosts,
-    getAllUserPosts,
+    getUserPosts,
     createPost,
     updateSpecificPost,
     deleteSpecificPost
@@ -43,13 +43,13 @@ userRouter.post('/add-follower', isAuthenticated, addFollowerFollowing);
 userRouter.delete('/remove-follower', isAuthenticated, deleteFollowerFollowing);
 
 // Create an endpoint for getting all posts of user.
-userRouter.get('/user-own-posts', isAuthenticated, getAllUserPosts);
+userRouter.get('/posts/:id', isAuthenticated, getUserPosts);
 
 // Create an endpoint for getting all following users posts.
 userRouter.get('/following-users-posts', isAuthenticated, getAllFollowingUsersPosts);
 
 // Create an endpoint for Creating a post.
-userRouter.post('/posts', isAuthenticated, createPost);
+userRouter.post('/posts/:id', isAuthenticated, createPost);
 
 // Create an endpoint for updating a post.
 userRouter.put('/posts/:id', isAuthenticated, updateSpecificPost);

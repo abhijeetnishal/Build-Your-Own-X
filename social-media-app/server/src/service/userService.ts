@@ -8,10 +8,11 @@ const getUserDetails = (query: object) => {
             if (user) {
                 resolve(user);
             } else {
-                reject("No user details found");
+                reject("Something went wrong!");
             }
         }
     );
 };
 
 export default getUserDetails;
+

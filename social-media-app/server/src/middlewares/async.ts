@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { HandlerFunction } from "../types/middlewares";
 
-// This asyncMiddleware function wraps your handler(function) and provides error handling logic, 
-// making your code cleaner and more maintainable.
+// This asyncMiddleware function wraps your handler(function) and provides error handling logic, making your code cleaner and more maintainable.
 function asyncMiddleware(handler: HandlerFunction) {
     // asyncMiddleware returns another anonymous async function
     return async (req: Request, res: Response, next: NextFunction) => {
