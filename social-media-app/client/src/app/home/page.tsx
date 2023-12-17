@@ -4,108 +4,56 @@ import userIcon from "@/../public/user-icon.png";
 import EditModal from "@/components/EditModal";
 import DeleteModal from "@/components/DeleteModal";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
-
-interface profile {
-  userName: string;
-}
+import { useRecoilValue } from "recoil";
+import { profileAtom } from "@/state/profileAtom";
+import useApi from "@/hooks/useApi";
+import PostService from "@/httpService/PostService";
+import { authAtom } from "@/state/authAtom";
+import Image from "next/image";
 
 function Page() {
+  const token = useRecoilValue(authAtom);
+  const profile = useRecoilValue(profileAtom);
+
+  const [{}, createPostAPI] = useApi(null);
+  const [{ data, isLoading, isError }, getPostsAPI] = useApi(null);
+
   const [btnName, setBtnName] = useState<string>("for-you");
   const [postContent, setPostContent] = useState<string>("");
 
-  const [profileDetails, setProfileDetails] = useState<profile>({
-    userName: "",
-  });
   const [userPosts, setUserPosts] = useState<Array<Object>>([]);
   const [followingUsersPosts, setFollowingUsersPosts] = useState<Array<Object>>(
     []
   );
-  const [userPostsLength, setUserPostsLength] = useState<number>(0);
-  const [isOwnPostLoading, setIsOwnPostLoading] = useState<boolean>(false);
   const [isFollowingPostLoading, setIsFollowingPostLoading] =
     useState<boolean>(false);
 
-  const handleSubmit = async () => {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_HOST}/api/users/posts/`,
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: postContent,
-        }),
+  useEffect(() => {
+    getPostsAPI(() => () => PostService.getOwnPosts(profile.userId, token));
+  }, [token]);
+
+  useEffect(() => {
+    if (data && data.code) {
+      const { code, data: result } = data;
+
+      if (code === 200) {
+        setUserPosts(result);
       }
+    }
+  }, [data, isError]);
+
+  const handleSubmit = async () => {
+    const newPost = {
+      postContent: postContent,
+    };
+
+    setUserPosts([newPost, ...userPosts]);
+
+    createPostAPI(
+      () => () =>
+        PostService.createPost(profile.userId, { content: postContent }, token)
     );
-
-    if (response.status === 201) {
-      window.location.reload();
-    }
   };
-
-  useEffect(() => {
-    async function getProfileDetails() {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST}/api/users/profile/details`,
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const profileData = await response.json();
-      setProfileDetails(profileData.data);
-    }
-    getProfileDetails();
-  }, [userPosts]);
-
-  useEffect(() => {
-    setIsOwnPostLoading(true);
-    async function getUserOwnPosts() {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST}/api/users/posts/user-own-posts`,
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const posts = await response.json();
-      setUserPosts(posts);
-      setUserPostsLength(posts.length);
-      setIsOwnPostLoading(false);
-    }
-    getUserOwnPosts();
-  }, []);
-
-  useEffect(() => {
-    setIsFollowingPostLoading(true);
-    async function getUserFollowingPosts() {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST}/api/users/posts/following-users-posts`,
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const posts = await response.json();
-      setFollowingUsersPosts(posts.data);
-      setIsFollowingPostLoading(false);
-    }
-    getUserFollowingPosts();
-  }, []);
 
   return (
     <main className="w-full h-[100dvh] bg-black flex flex-col">
@@ -147,11 +95,13 @@ function Page() {
             </section>
           </button>
         </section>
+
         <section className="w-full h-[180px] flex flex-col pt-[15px]">
           <section className="w-full h-[40px] flex flex-row">
             <figure className="w-[70px] h-full pl-[16px] pr-[8px]">
-              <img className="w-[35px] h-[35px]" src={userIcon.src} alt="" />
+              <Image width={35} height={35} src={userIcon.src} alt="" />
             </figure>
+
             <section className="w-full h-full pl-[10px]">
               <input
                 type="text"
@@ -164,6 +114,7 @@ function Page() {
               />
             </section>
           </section>
+
           <section className="ml-[60px] mr-[50px] border-b border-gray-700 pt-[40px]"></section>
           <section className="w-full flex flex-row pl-[60px] pt-[10px] pb-[20px] border-b border-gray-700">
             <button className="pr-[10px]">
@@ -196,11 +147,15 @@ function Page() {
             </button>
           </section>
         </section>
+
         {btnName === "for-you" ? (
           <section className="w-full h-[430px] flex flex-col overflow-x-auto">
             <section className="w-full h-full flex flex-col px-[16px]">
-              {!isOwnPostLoading ? (
-                userPostsLength &&
+              {isLoading ? (
+                <section className="w-full h-full">
+                  <LoadingSkeleton />
+                </section>
+              ) : (
                 userPosts?.map((post: any, index) => (
                   <section
                     key={post._id}
@@ -209,14 +164,15 @@ function Page() {
                     <section className="w-full h-[40px] flex flex-row items-center">
                       <section className="w-full h-full flex flex-row">
                         <figure className="pr-[8px]">
-                          <img
-                            className="w-[25px] h-[25px]"
+                          <Image
+                            width={25}
+                            height={25}
                             src={userIcon.src}
                             alt=""
                           />
                         </figure>
                         <section className="text-white font-semibold text-[16px]">
-                          {profileDetails.userName}
+                          {profile.userName}
                         </section>
                       </section>
                       <button className="">
@@ -229,19 +185,23 @@ function Page() {
                       </button>
                       <button>{<DeleteModal postId={post._id} />}</button>
                     </section>
+
                     <section className="w-full flex flex-col pl-[35px]">
                       <section className="text-white font-normal text-[16px]">
                         {post.postContent}
                       </section>
                       <section>
                         {post.postImage ? (
-                          <img
+                          <Image
+                            width={40}
+                            height={40}
                             className="w-full h-[40px]"
                             src={post.postImage}
                             alt=""
                           />
                         ) : null}
                       </section>
+
                       <section className="w-full flex flex-row justify-between pt-[16px]">
                         <svg className="w-[25px] h-[25px] fill-gray-500">
                           <g>
@@ -267,10 +227,6 @@ function Page() {
                     </section>
                   </section>
                 ))
-              ) : (
-                <section className="w-full h-full">
-                  <LoadingSkeleton />
-                </section>
               )}
             </section>
           </section>
@@ -286,8 +242,9 @@ function Page() {
                     <section className="w-full h-[40px] flex flex-row items-center">
                       <section className="w-full h-full flex flex-row">
                         <figure className="pr-[8px]">
-                          <img
-                            className="w-[25px] h-[25px]"
+                          <Image
+                            width={25}
+                            height={25}
                             src={userIcon.src}
                             alt=""
                           />
@@ -303,7 +260,9 @@ function Page() {
                       </section>
                       <section>
                         {post.postImage ? (
-                          <img
+                          <Image
+                            width={40}
+                            height={40}
                             className="w-full h-[40px]"
                             src={post.postImage}
                             alt=""

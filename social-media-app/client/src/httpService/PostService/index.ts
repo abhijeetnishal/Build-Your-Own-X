@@ -1,18 +1,29 @@
 import request from "../request";
 
-const getOwnPosts = (data: Object, token: string) => {
+const getOwnPosts = (userId: string, token: string) => {
     return request({
-        url: "/api/v1/user/login",
-        method: "POST",
-        data: data,
+        url: `/api/v1/user/posts/${userId}`,
+        method: "GET",
         headers: {
             "x-auth-token": token
         }
     });
 };
 
+const createPost = (userId: string, data: object, token: string) => {
+    return request({
+        url: `/api/v1/user/posts/${userId}`,
+        method: "POST",
+        data: data,
+        headers: {
+            "x-auth-token": token
+        }
+    });
+}
+
 const PostService = {
-    getOwnPosts
+    getOwnPosts,
+    createPost
 };
 
 export default PostService;

@@ -11,15 +11,9 @@ import Loading from "@/components/Loading";
 import useApi from "@/hooks/useApi";
 import { AuthService } from "@/httpService";
 import { setCookie } from "cookies-next";
-import { useSetRecoilState } from "recoil";
-import { authAtom } from "@/state/authAtom";
-import { profileAtom } from "@/state/profileAtom";
 
 export default function Page() {
   const router = useRouter();
-
-  const setIsAuth = useSetRecoilState(authAtom);
-  const setProfile = useSetRecoilState(profileAtom);
 
   const [{ data, isLoading, isError }, authApi] = useApi(null);
 
@@ -60,12 +54,9 @@ export default function Page() {
           userName: result.userName,
         };
 
-        setIsAuth(token);
-        setProfile(userDetails);
+        setCookie("token", token);
 
-        setCookie("token", token, { maxAge: 60 * 60 * 24 });
-
-        router.push("/home");
+        router.replace("/home");
       } else {
         setMessage(message);
       }

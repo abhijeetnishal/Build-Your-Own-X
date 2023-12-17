@@ -1,16 +1,9 @@
 "use client";
+import IsAuthenticated from "@/components/ProtectRoute";
 import SideNavbar from "@/components/SideNavbar";
 import SidePanel from "@/components/SidePanel";
-import { redirect } from "next/navigation";
-import { getCookie } from "cookies-next";
 
 function HomePageLayout({ children }: { children: React.ReactNode }) {
-  const token = getCookie("token");
-
-  if (!token) {
-    redirect("/login");
-  }
-
   return (
     <main className="w-full h-full flex flex-row">
       {/* Include shared UI here e.g. a header or sidebar */}
@@ -21,4 +14,4 @@ function HomePageLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default HomePageLayout;
+export default IsAuthenticated(HomePageLayout);

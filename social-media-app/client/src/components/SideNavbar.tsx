@@ -17,14 +17,13 @@ const SideNavbar = () => {
 
   const handleClick = async () => {
     deleteCookie("token");
+    router.replace("/login");
 
     setIsAuth("");
     setProfile({
       userId: "",
       userName: "",
     });
-
-    router.replace("/login");
   };
 
   return (
