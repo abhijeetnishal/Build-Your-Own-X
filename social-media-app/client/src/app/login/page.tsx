@@ -11,9 +11,14 @@ import Loading from "@/components/Loading";
 import useApi from "@/hooks/useApi";
 import { AuthService } from "@/httpService";
 import { setCookie } from "cookies-next";
+import { useSetRecoilState } from "recoil";
+import { profileAtom } from "@/state/profileAtom";
+import { authAtom } from "@/state/authAtom";
+import { useCookies } from "next-client-cookies";
 
 export default function Page() {
   const router = useRouter();
+  const cookies = useCookies();
 
   const [{ data, isLoading, isError }, authApi] = useApi(null);
 
@@ -21,6 +26,9 @@ export default function Page() {
   const [password, setPassword] = useState<string>("");
 
   const [message, setMessage] = useState<string>("");
+
+  const setProfile = useSetRecoilState(profileAtom);
+  const isAuth = useSetRecoilState(authAtom);
 
   const [isPasswordEyeBtnClicked, setIsPasswordEyeBtnClicked] = useState(false);
 
@@ -49,12 +57,11 @@ export default function Page() {
 
       if (code === 200) {
         const token = result.authToken;
-        const userDetails = {
-          userId: result.userId,
-          userName: result.userName,
-        };
 
-        setCookie("token", token);
+        cookies.set('token', token, { expires: 365 });
+
+        isAuth(token);
+        setProfile(result);
 
         router.replace("/home");
       } else {

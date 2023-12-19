@@ -1,5 +1,5 @@
 "use client";
-import IsAuthenticated from "@/components/ProtectRoute";
+import IsAuthenticated from "@/components/ProtectedRoute";
 import SideNavbar from "@/components/SideNavbar";
 import SidePanel from "@/components/SidePanel";
 
