@@ -28,7 +28,7 @@ userRouter.post('/login', login);
 
 // isAuthenticated is a middleware to check user is authenticated or not
 // Create an endpoint to get profile details.
-userRouter.get('/details/:id', isAuthenticated, profileDetails)
+userRouter.post('/details', isAuthenticated, profileDetails)
 
 // Create an endpoint to get follower list.
 userRouter.get('/follower', isAuthenticated, followerDetails);
