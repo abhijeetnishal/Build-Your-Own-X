@@ -168,7 +168,25 @@ const profileDetails = async (req: Request, res: Response) => {
 
     // Check token exists or not
     if (token) {
-        return res.status(200).json('user exists');
+      const { userId } = parseJwt(token);
+
+      if (userId) {
+        // Check if Object id is valid or not
+        if (isValidObjectId(userId)) {
+          const userExist = await getUserDetails({ _id: userId });
+
+          // Check if user registered or not
+          if (userExist) {
+            return res.status(200).json(userExist);
+          } else {
+            return res.status(400).json({ message: "User doesn't exist" });
+          }
+        } else {
+          return res.status(400).json({ message: "Invalid mongo object id" });
+        }
+      } else {
+        return res.status(401).json("Invalid token");
+      }
     } else {
       return res.status(401).json({ message: "Token is not present" });
     }
@@ -341,47 +359,57 @@ const getUserPosts = asyncMiddleware(
 
       // Check if Object id is valid or not
       if (isValidObjectId(userId)) {
-        // Get client from redisConnect.ts file
-        const client = await redisConnect();
+        const userExist = await getUserDetails({ _id: userId });
 
-        // Using caching for all posts
-        // Check if value is present in cache or not
-        const dataCached = await client.get("user_posts_cache_" + userId);
+        // Check if user registered or not
+        if (userExist) {
+          // Get client from redisConnect.ts file
+          const client = await redisConnect();
 
-        // If value is present(cache hit)
-        if (dataCached) {
-          // Parse the value from string to (arr of obj)
-          const cachedData = JSON.parse(dataCached);
+          // Using caching for all posts
+          // Check if value is present in cache or not
+          const dataCached = await client.get("user_posts_cache_" + userId);
 
-          // Return the cached data instead from DB
-          return next({
-            success: true,
-            statusCode: 200,
-            data: cachedData,
-            message: "User posts",
-          });
-        } else {
-          // Get user posts
-          const userPosts = await getAllPosts({ userId: userId });
+          // If value is present(cache hit)
+          if (dataCached) {
+            // Parse the value from string to (arr of obj)
+            const cachedData = JSON.parse(dataCached);
 
-          if (userPosts.length) {
-            // Store the data in Redis(key, value) with options
-            await client.set(
-              "user_posts_cache_" + userId,
-              JSON.stringify(userPosts),
-              {
-                //set expiration time
-                EX: 300,
-                //not exist
-                NX: true,
-              }
-            );
+            // Return the cached data instead from DB
+            return next({
+              success: true,
+              statusCode: 200,
+              data: cachedData,
+              message: "User posts",
+            });
+          } else {
+            // Get user posts
+            const userPosts = await getAllPosts({ userId: userId });
+
+            if (userPosts.length) {
+              // Store the data in Redis(key, value) with options
+              await client.set(
+                "user_posts_cache_" + userId,
+                JSON.stringify(userPosts),
+                {
+                  //set expiration time
+                  EX: 300,
+                  //not exist
+                  NX: true,
+                }
+              );
+            }
+            next({
+              success: true,
+              statusCode: 200,
+              data: userPosts,
+              message: "Users posts",
+            });
           }
-          next({
-            success: true,
-            statusCode: 200,
-            data: userPosts,
-            message: "Users posts",
+        } else {
+          return next({
+            statusCode: 400,
+            message: "User doesn't exist",
           });
         }
       } else {
@@ -407,34 +435,44 @@ const createPost = asyncMiddleware(
 
       // Check if Object id is valid or not
       if (isValidObjectId(userId)) {
-        // Get data from req
-        const { content } = req.body;
+        const userExist = await getUserDetails({ _id: userId });
 
-        // Check content is present or not
-        if (!content) {
-          // Bad request (400)
+        // Check if user registered or not
+        if (userExist) {
+          // Get data from req
+          const { content } = req.body;
+
+          // Check content is present or not
+          if (!content) {
+            // Bad request (400)
+            return next({
+              statusCode: 400,
+              message: "enter content data",
+            });
+          } else {
+            // Create post
+            const newPost = await savePost({
+              postContent: content,
+              userId: userId,
+            });
+
+            // Get client from redisConnect.ts file
+            const client = await redisConnect();
+
+            // Invalidate cache
+            client.del("user_posts_cache_" + userId);
+
+            return next({
+              success: true,
+              statusCode: 200,
+              message: "Post created",
+              data: newPost,
+            });
+          }
+        } else {
           return next({
             statusCode: 400,
-            message: "enter content data",
-          });
-        } else {
-          // Create post
-          const newPost = await savePost({
-            postContent: content,
-            userId: userId,
-          });
-
-          // Get client from redisConnect.ts file
-          const client = await redisConnect();
-
-          // Invalidate cache
-          client.del("user_posts_cache_" + userId);
-
-          return next({
-            success: true,
-            statusCode: 200,
-            message: "Post created",
-            data: newPost,
+            message: "User doesn't exist",
           });
         }
       } else {
