@@ -163,8 +163,8 @@ const login = asyncMiddleware(
 
 const profileDetails = async (req: Request, res: Response) => {
   try {
-    // Get token from req
-    const { token } = req.body;
+    // Get access token from request header
+    const token = req.header("x-auth-token");
 
     // Check token exists or not
     if (token) {
@@ -177,7 +177,10 @@ const profileDetails = async (req: Request, res: Response) => {
 
           // Check if user registered or not
           if (userExist) {
-            return res.status(200).json(userExist);
+            return res.status(200).json({
+              userId: userExist._id,
+              userName: userExist.userName
+            });
           } else {
             return res.status(400).json({ message: "User doesn't exist" });
           }
