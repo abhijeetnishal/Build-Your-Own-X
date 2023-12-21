@@ -14,11 +14,9 @@ import { setCookie } from "cookies-next";
 import { useSetRecoilState } from "recoil";
 import { profileAtom } from "@/state/profileAtom";
 import { authAtom } from "@/state/authAtom";
-import { useCookies } from "next-client-cookies";
 
 export default function Page() {
   const router = useRouter();
-  const cookies = useCookies();
 
   const [{ data, isLoading, isError }, authApi] = useApi(null);
 
@@ -58,7 +56,7 @@ export default function Page() {
       if (code === 200) {
         const token = result.authToken;
 
-        cookies.set('token', token, { expires: 365 });
+        setCookie('token', token);
 
         isAuth(token);
         setProfile(result);

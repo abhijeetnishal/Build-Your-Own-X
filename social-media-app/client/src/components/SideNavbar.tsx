@@ -1,19 +1,30 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useEffect } from "react";
 import userIcon from "@/../public/user-icon.png";
-import { deleteCookie } from "cookies-next";
+import { deleteCookie, getCookie } from "cookies-next";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import { profileAtom } from "@/state/profileAtom";
 import { authAtom } from "@/state/authAtom";
+import getProfileDetails from "@/httpService/auth";
 
 const SideNavbar = () => {
   const router = useRouter();
+  const token = getCookie("token") as string;
 
   const setIsAuth = useSetRecoilState(authAtom);
 
   const [profile, setProfile] = useRecoilState(profileAtom);
+
+  useEffect(() => {
+    const getProfile = async () => {
+      const response = await getProfileDetails(token);
+      const profileDetails = await response.json();
+      setProfile(profileDetails);
+    };
+    getProfile();
+  });
 
   const handleClick = async () => {
     deleteCookie("token");
@@ -90,15 +101,29 @@ const SideNavbar = () => {
           </button>
         </section>
       </section>
-
-      <section className="w-full h-[40px] flex flex-row items-center pl-[8px]">
-        <figure className="pr-[10px]">
-          <img className="w-[25px] h-[25px]" src={userIcon.src} alt="" />
-        </figure>
-        <section className="text-white font-semibold text-[20px]">
-          {profile.userName}
+      {profile.userName ? (
+        <section className="w-full h-[40px] flex flex-row items-center pl-2 mb-2">
+          <figure className="pr-[10px]">
+            <img className="w-[25px] h-[25px]" src={userIcon.src} alt="" />
+          </figure>
+          <section className="text-white font-semibold text-[20px]">
+            {profile.userName}
+          </section>
         </section>
-      </section>
+      ) : (
+        <div className="w-full h-[40px] flex flex-row items-center pl-2 mb-2">
+          <svg
+            className="w-8 h-8 text-gray-200 dark:text-gray-700 me-4"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm0 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm0 13a8.949 8.949 0 0 1-4.951-1.488A3.987 3.987 0 0 1 9 13h2a3.987 3.987 0 0 1 3.951 3.512A8.949 8.949 0 0 1 10 18Z" />
+          </svg>
+          <div className="w-20 h-2.5 bg-gray-200 rounded-full dark:bg-gray-700 me-3"></div>
+        </div>
+      )}
     </aside>
   );
 };

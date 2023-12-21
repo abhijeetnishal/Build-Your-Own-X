@@ -1,50 +1,36 @@
 "use client";
+import getProfileDetails from "@/httpService/auth";
 import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
 const IsAuthenticated = (Component: any) => {
-    const WrappedComponent = (props: any) => {
-      const router = useRouter();
-      const token = getCookie("token") as string;
+  const WrappedComponent = async (props: any) => {
+    const router = useRouter();
+    const token = getCookie("token") as string;
 
-      const checkAuthentication = async () => {
-        const response = await fetch(
-          "http://localhost:8080/api/v1/user/details",
-          {
-            method: "POST",
-            headers: {
-              "content-type": "application/json",
-              "x-auth-token": token,
-            },
-            body: JSON.stringify({
-              token: token,
-            }),
-          }
-        );
+    useEffect(() => {
+      if (!token) {
+        router.replace("/login");
+      } else {
+        const fetch = async () => {
+          const response = await getProfileDetails(token);
 
-        const isAuth = response.ok;
-        return isAuth;
-      };
-
-      useEffect(() => {
-        const fetchData = async () => {
-          const isAuth = await checkAuthentication();
-          if (!isAuth) {
-            router.push("/login");
+          if (!response.ok) {
+            router.replace("/login");
           }
         };
-
-        fetchData();
-      }, [token]);
-
-      if (!Component) {
-        return null;
-      } else {
-        return <Component {...props} />;
+        fetch();
       }
-    };
-    return WrappedComponent;
+    }, [token]);
+
+    if (!Component) {
+      return null;
+    } else {
+      return <Component {...props} />;
+    }
+  };
+  return WrappedComponent;
 };
 
 export default IsAuthenticated;
