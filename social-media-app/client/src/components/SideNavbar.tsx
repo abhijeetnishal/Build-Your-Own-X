@@ -13,18 +13,20 @@ const SideNavbar = () => {
   const router = useRouter();
   const token = getCookie("token") as string;
 
-  const setIsAuth = useSetRecoilState(authAtom);
+  const [isAuth, setIsAuth] = useRecoilState(authAtom);
 
   const [profile, setProfile] = useRecoilState(profileAtom);
 
-  useEffect(() => {
-    const getProfile = async () => {
-      const response = await getProfileDetails(token);
-      const profileDetails = await response.json();
-      setProfile(profileDetails);
-    };
-    getProfile();
-  });
+  // useEffect(() => {
+  //   if (isAuth) {
+  //     const getProfile = async () => {
+  //       const response = await getProfileDetails(token);
+  //       const profileDetails = await response.json();
+  //       setProfile(profileDetails);
+  //     };
+  //     getProfile();
+  //   }
+  // }, [token]);
 
   const handleClick = async () => {
     deleteCookie("token");

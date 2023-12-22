@@ -14,6 +14,8 @@ import { setCookie } from "cookies-next";
 import { useSetRecoilState } from "recoil";
 import { profileAtom } from "@/state/profileAtom";
 import { authAtom } from "@/state/authAtom";
+import X from "@/icons/X";
+import AuthSubmitButton from "@/components/AuthSubmitButton";
 
 export default function Page() {
   const router = useRouter();
@@ -56,7 +58,7 @@ export default function Page() {
       if (code === 200) {
         const token = result.authToken;
 
-        setCookie('token', token);
+        setCookie("token", token);
 
         isAuth(token);
         setProfile(result);
@@ -87,15 +89,7 @@ export default function Page() {
     <main className="w-full h-[calc(100dvh-30px)] flex flex-row xl:flex-row lg:flex-row md:flex-row sm:flex-col xs:flex-col">
       <ToastContainer autoClose={3000} />
       <figure className="w-1/2 xl:w-1/2 lg:w-1/2 md:w-1/2 sm:w-full xs:w-full bg-black h-full flex justify-center items-center">
-        <svg
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          className="w-full xl:w-full lg:w-full md:w-[300px] sm:w-[200px] xs:w-[200px] h-1/2 fill-white r-1nao33i r-4qtqp9 r-yyyyoo r-rxcuwo r-1777fci r-m327ed r-dnmrzs r-494qqr r-bnwqim r-1plcrui r-lrvibr"
-        >
-          <g>
-            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
-          </g>
-        </svg>
+        <X />
       </figure>
       <section className="w-1/2 xl:w-1/2 lg:w-1/2 md:w-1/2 sm:w-full xs:w-full h-full flex flex-col pl-[100px] xl:pl-[100px] lg:pl-[100px] md:pl-[100px] sm:pl-[0px] xs:pl-[0px] justify-center items-center bg-black text-white">
         <section className="text-[50px] xl:text-[50px] lg:text-[50px] md:text-[35px] sm:text-[50px] xs:text-[32px] font-bold">
@@ -153,14 +147,8 @@ export default function Page() {
           <section className="text-[15px] font-bold pb-[20px]">
             Don&apos;t have an account?
           </section>
-          <Link
-            href="/"
-            className="w-[350px] xl:w-[350px] lg:w-[350px] md:w-[250px] sm:w-[350px] xs:w-[250px] h-[35px] flex justify-center items-center border-[2px] border-gray-600 rounded-[20px]"
-          >
-            <section className="text-[15px] font-semibold text-blue-400">
-              Sign up
-            </section>
-          </Link>
+
+          <AuthSubmitButton redirectTo={"/"} actionButtonName="Login" />
         </section>
       </section>
     </main>
