@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Mongoose } from "mongoose";
 
 // Create a postSchema
 const PostSchema = new mongoose.Schema({
@@ -15,10 +15,8 @@ const PostSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
-    // Foreign key
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+    author: {
+        type: Object,
         required: true,
     }
 }, { timestamps: true })

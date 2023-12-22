@@ -4,16 +4,12 @@ import isAuthenticated from '../middlewares/auth';
 import {
     signup,
     login,
-    profileDetails,
     followerDetails,
     followingDetails,
     addFollowerFollowing,
     deleteFollowerFollowing,
     getAllFollowingUsersPosts,
-    getUserPosts,
-    createPost,
-    updateSpecificPost,
-    deleteSpecificPost
+    profileDetails
 } from '../controllers/userController';
 
 // express.Router() is a method in the Express.js that  Creates a new router object.
@@ -42,20 +38,8 @@ userRouter.post('/add-follower', isAuthenticated, addFollowerFollowing);
 // Create an endpoint to remove follower.
 userRouter.delete('/remove-follower', isAuthenticated, deleteFollowerFollowing);
 
-// Create an endpoint for getting all posts of user.
-userRouter.get('/posts/:id', isAuthenticated, getUserPosts);
-
 // Create an endpoint for getting all following users posts.
 userRouter.get('/following-users-posts', isAuthenticated, getAllFollowingUsersPosts);
-
-// Create an endpoint for Creating a post.
-userRouter.post('/posts/:id', isAuthenticated, createPost);
-
-// Create an endpoint for updating a post.
-userRouter.put('/posts/:id', isAuthenticated, updateSpecificPost);
-
-// Create an endpoint for deleting a post
-userRouter.delete('/posts/:id', isAuthenticated, deleteSpecificPost);
 
 // Export to router to use in other files (index.js file)
 export default userRouter;
