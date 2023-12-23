@@ -1,32 +1,18 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
 import userIcon from "@/../public/user-icon.png";
-import { deleteCookie, getCookie } from "cookies-next";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { deleteCookie } from "cookies-next";
+import { useRecoilState } from "recoil";
 import { profileAtom } from "@/state/profileAtom";
 import { authAtom } from "@/state/authAtom";
-import getProfileDetails from "@/httpService/auth";
 
 const SideNavbar = () => {
   const router = useRouter();
-  const token = getCookie("token") as string;
 
   const [isAuth, setIsAuth] = useRecoilState(authAtom);
 
   const [profile, setProfile] = useRecoilState(profileAtom);
-
-  // useEffect(() => {
-  //   if (isAuth) {
-  //     const getProfile = async () => {
-  //       const response = await getProfileDetails(token);
-  //       const profileDetails = await response.json();
-  //       setProfile(profileDetails);
-  //     };
-  //     getProfile();
-  //   }
-  // }, [token]);
 
   const handleClick = async () => {
     deleteCookie("token");

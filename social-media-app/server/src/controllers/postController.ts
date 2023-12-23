@@ -95,10 +95,10 @@ const createPost = asyncMiddleware(
         // Check if user registered or not
         if (userExist) {
           // Get data from req
-          const { content } = req.body;
+          const { post } = req.body;
 
           // Check content is present or not
-          if (!content) {
+          if (!post) {
             // Bad request (400)
             return next({
               statusCode: 400,
@@ -107,7 +107,7 @@ const createPost = asyncMiddleware(
           } else {
             // Create post
             const newPost = await savePost({
-              postContent: content,
+              postContent: post,
               userId: userId,
             });
 
@@ -185,7 +185,7 @@ const updateSpecificPost = asyncMiddleware(
   }
 );
 
-const deleteSpecificPost = async (req: Request, res: Response) => {
+const deleteSpecificPost = asyncMiddleware(async (req: Request, res: Response, next: NextFunction) => {
   try {
     //get post Id from params
     const postId = req.params.id;
@@ -202,11 +202,10 @@ const deleteSpecificPost = async (req: Request, res: Response) => {
     //invalidate cache
     client.del("user_posts_cache_" + userId);
 
-    return res.status(200).json({ message: "post deleted" });
+    //return res.status(200).json({ message: "post deleted" });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "internal server error\n" + error });
+    //res.status(500).json({ message: "internal server error\n" + error });
   }
-};
+});
 
 export { getUserPosts, createPost, updateSpecificPost, deleteSpecificPost };

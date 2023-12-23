@@ -29,7 +29,7 @@ function Page() {
     useState<boolean>(false);
 
   useEffect(() => {
-    if(profile && profile.userId){
+    if (profile && profile.userId) {
       getPostsAPI(() => () => PostService.getOwnPosts(profile.userId, token));
     }
   }, [token]);
@@ -48,13 +48,17 @@ function Page() {
     setPostContent("");
     const newPost = {
       postContent: postContent,
+      author: {
+        id: profile.userId,
+        name: profile.userName,
+      },
     };
 
     setUserPosts([newPost, ...userPosts]);
-    
+
     createPostAPI(
       () => () =>
-        PostService.createPost(profile.userId, { content: postContent, author: profile }, token)
+        PostService.createPost(profile.userId, { post: newPost }, token)
     );
   };
 
