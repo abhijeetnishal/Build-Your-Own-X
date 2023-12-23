@@ -21,7 +21,7 @@ postRouter.get("/:id", isAuthenticated, getUserPosts);
 postRouter.post("/:id", isAuthenticated, createPost);
 
 // Create an endpoint for updating a post.
-postRouter.put("/:id", isAuthenticated, updateSpecificPost);
+postRouter.patch("/:id", isAuthenticated, updateSpecificPost);
 
 // Create an endpoint for deleting a post
 postRouter.delete("/:id", isAuthenticated, deleteSpecificPost);

@@ -1,10 +1,10 @@
 import asyncMiddleware from "../middlewares/async";
 import { NextFunction, Request, Response } from "express";
 import redisConnect from "../config/redisConnect";
-import { savePost, getAllPosts } from "../service/postService";
+import { savePost, getAllPosts, getPostDetails, updatePost, deletePost } from "../service/postService";
 import { isValidObjectId } from "mongoose";
 import getUserDetails from "../service/userService";
-import postSchema from "../models/postModel";
+import { parseJwt } from "../helper/commonHelper";
 
 const getUserPosts = asyncMiddleware(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -95,10 +95,10 @@ const createPost = asyncMiddleware(
         // Check if user registered or not
         if (userExist) {
           // Get data from req
-          const { post } = req.body;
+          const { postDetails } = req.body;
 
           // Check content is present or not
-          if (!post) {
+          if (!postDetails) {
             // Bad request (400)
             return next({
               statusCode: 400,
@@ -106,10 +106,7 @@ const createPost = asyncMiddleware(
             });
           } else {
             // Create post
-            const newPost = await savePost({
-              postContent: post,
-              userId: userId,
-            });
+            const newPost = await savePost(postDetails);
 
             // Get client from redisConnect.ts file
             const client = await redisConnect();
@@ -148,64 +145,135 @@ const createPost = asyncMiddleware(
 const updateSpecificPost = asyncMiddleware(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      //get post Id from params
+      // Get post Id from params
       const postId = req.params.id;
 
-      //get userId from cookies
-      const userId = req.cookies.user_cookies.userId;
+      // Check postId exists or not
+      if (postId) {
+        // Check if Object id is valid or not
+        if (isValidObjectId(postId)) {
+          const postExist = await getPostDetails({ _id: postId });
 
-      //get data from client
-      const { content, image, video } = req.body;
+          // Check if post exists or not
+          if (postExist) {
+            // Get access token from request header
+            const token = req.header("x-auth-token");
+            const { userId } = parseJwt(token);
 
-      //update post using postId
-      const updatedPost = {
-        postContent: content,
-        postImage: image,
-        postVideo: video,
-        userId: userId,
-      };
-      const updatedDocument = await postSchema.findByIdAndUpdate(
-        postId,
-        updatedPost,
-        { new: true }
-      );
+            //get data from client
+            const { content, image, video } = req.body;
+            
+            let updatedData: any = {};
+            if(content && content !== ""){
+              updatedData.postContent = content;
+            }
+            if(image && image !== ""){
+              updatedData["postImage"] = image;
+            }
+            if(video && video !== ""){
+              updatedData["postVideo"] = video;
+            }
+        
+            //update post using postId
+            const data = await updatePost({_id: postId}, updatedData);
 
-      //get client from redisConnect.ts file
-      const client = await redisConnect();
+            //get client from redisConnect.ts file
+            const client = await redisConnect();
 
-      //invalidate cache
-      client.del("user_posts_cache_" + userId);
+            //invalidate cache
+            client.del("user_posts_cache_" + userId);
 
-      // return res
-      //   .status(200)
-      //   .json({ message: "post updated", data: updatedDocument });
+            return next({
+              statusCode: 200,
+              success: true,
+              data: data,
+              message: "Post updated",
+            })
+          } else {
+            return next({
+              statusCode: 400,
+              message: "Post doesn't exist",
+            });
+          }
+        } else {
+          return next({
+            statusCode: 401,
+            message: "Invalid mongo object id",
+          });
+        }
+      } else {
+        return next({
+          statusCode: 401,
+          message: "Post id not present",
+        });
+      }
     } catch (error) {
-      //res.status(500).json({ message: "internal server error" + error });
+      return next({
+        statusCode: 500,
+        message: error.message,
+      });
     }
   }
 );
 
-const deleteSpecificPost = asyncMiddleware(async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    //get post Id from params
-    const postId = req.params.id;
+const deleteSpecificPost = asyncMiddleware(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Get post Id from params
+      const postId = req.params.id;
 
-    //get userId from cookies
-    const userId = req.cookies.user_cookies.userId;
+      // Check postId exists or not
+      if (postId) {
+        // Check if Object id is valid or not
+        if (isValidObjectId(postId)) {
+          const postExist = await getPostDetails({ _id: postId });
 
-    //delete post using postId
-    await postSchema.findByIdAndRemove(postId);
+          // Check if post exists or not
+          if (postExist) {
+            // Get access token from request header
+            const token = req.header("x-auth-token");
+            const { userId } = parseJwt(token);
 
-    //get client from redisConnect.ts file
-    const client = await redisConnect();
+            //update post using postId
+            const data = await deletePost({_id: postId});
 
-    //invalidate cache
-    client.del("user_posts_cache_" + userId);
+            //get client from redisConnect.ts file
+            const client = await redisConnect();
 
-    //return res.status(200).json({ message: "post deleted" });
-  } catch (error) {
-    //res.status(500).json({ message: "internal server error\n" + error });
+            //invalidate cache
+            client.del("user_posts_cache_" + userId);
+
+            return next({
+              statusCode: 200,
+              success: true,
+              data: data,
+              message: "Post Deleted",
+            })
+          } else {
+            return next({
+              statusCode: 400,
+              message: "Post doesn't exist",
+            });
+          }
+        } else {
+          return next({
+            statusCode: 401,
+            message: "Invalid mongo object id",
+          });
+        }
+      } else {
+        return next({
+          statusCode: 401,
+          message: "Post id not present",
+        });
+      }
+    } catch (error) {
+      return next({
+        statusCode: 500,
+        message: error.message,
+      });
+    }
   }
-});
+);
 
 export { getUserPosts, createPost, updateSpecificPost, deleteSpecificPost };

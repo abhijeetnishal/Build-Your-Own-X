@@ -1,4 +1,4 @@
-import mongoose, { Mongoose } from "mongoose";
+import mongoose from "mongoose";
 
 // Create a postSchema
 const PostSchema = new mongoose.Schema({
