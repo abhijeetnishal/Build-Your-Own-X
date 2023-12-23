@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import eye from "@/../public/eye-image.png";
@@ -7,12 +6,13 @@ import cutEye from "@/../public/cut-eye-image.png";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Loading from "@/components/Loading";
+import Loading from "@/components/Loaders/ProcessingLoader";
 import { validatePassword } from "@/utils";
 import useApi from "@/hooks/useApi";
 import { AuthService } from "@/httpService";
-import X from "@/icons/X";
 import AuthSubmitButton from "@/components/AuthSubmitButton";
+import XIcon from "@/icons/X";
+import ProcessingLoader from "@/components/Loaders/ProcessingLoader";
 
 const SignUp = () => {
   const router = useRouter();
@@ -84,10 +84,10 @@ const SignUp = () => {
   return (
     <main className="w-full h-[calc(100dvh-30px)] flex flex-row xl:flex-row lg:flex-row md:flex-row sm:flex-col xs:flex-col">
       <ToastContainer autoClose={3000} />
-      <figure className="w-1/2 xl:w-1/2 lg:w-1/2 md:w-1/2 sm:w-full xs:w-full bg-black h-full flex justify-center items-center">
-        <X />
+      <figure className="w-1/2 xl:w-1/2 lg:w-1/2 md:w-1/2 sm:w-full xs:w-full bg-black flex justify-center items-center">
+        <XIcon />
       </figure>
-      
+
       <section className="w-1/2 xl:w-1/2 lg:w-1/2 md:w-1/2 sm:w-full xs:w-full h-full flex flex-col pl-[100px] xl:pl-[100px] lg:pl-[100px] md:pl-[100px] sm:pl-[0px] xs:pl-[0px] justify-center items-center bg-black text-white">
         <section className="text-[50px] xl:text-[50px] lg:text-[50px] md:text-[35px] sm:text-[50px] xs:text-[32px] font-bold">
           Happening now
@@ -159,14 +159,14 @@ const SignUp = () => {
           </button>
         </section>
         <section className="flex w-[350px] xl:w-[350px] lg:w-[350px] md:w-[250px] sm:w-[350px] xs:w-[250px] h-[65px] pt-[32px] justify-center">
-          {isLoading ? <Loading /> : <div></div>}
+          {isLoading ? <ProcessingLoader /> : <div></div>}
         </section>
         <section className="flex flex-col pt-[40px] pb-[10px]">
           <section className="text-[15px] font-bold pb-[20px]">
             Already have an account?
           </section>
 
-          <AuthSubmitButton redirectTo={"/login"} actionButtonName="Sign Up" />
+          <AuthSubmitButton redirectTo={"/login"} actionButtonName="Login" />
         </section>
       </section>
     </main>

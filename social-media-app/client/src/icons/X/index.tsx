@@ -1,4 +1,4 @@
-const X = () => {
+const XIcon = () => {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -12,4 +12,4 @@ const X = () => {
   );
 };
 
-export default X;
+export default XIcon;

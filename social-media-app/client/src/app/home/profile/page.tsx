@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from "react";
 import userIcon from "@/../public/user-icon.png";
 import DialogComponent from "@/components/DialogComponent";
-import LoadingSkeleton from "@/components/LoadingSkeleton";
 import { useRecoilValue } from "recoil";
 import { profileAtom } from "@/state/profileAtom";
+import PostLoader from "@/components/Loaders/PostLoader";
 
 function Page() {
   const profile = useRecoilValue(profileAtom);
@@ -173,7 +173,7 @@ function Page() {
               ))
             ) : (
               <section className="w-full h-full">
-                <LoadingSkeleton />
+                <PostLoader loaderLength={5} />
               </section>
             )}
           </section>
@@ -213,7 +213,7 @@ function Page() {
               ))
             ) : (
               <section className="w-full h-full">
-                <LoadingSkeleton />
+                <PostLoader loaderLength={5} />
               </section>
             )}
           </section>
