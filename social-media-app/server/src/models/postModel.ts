@@ -1,25 +1,26 @@
 import mongoose from "mongoose";
 
 // Create a postSchema
-const PostSchema = new mongoose.Schema({
+const PostSchema = new mongoose.Schema(
+  {
     // Specify how the fields should work by adding some mongoose option:
-    postContent: {
-        type: String,
-        default: ''
+    content: {
+      type: String,
+      default: "",
+      required: true,
     },
-    postImage: {
-        type: String,
-        default: ''
-    },
-    postVideo: {
-        type: String,
-        default: ''
+    mediaUrl: {
+      type: Object,
+      default: {},
     },
     author: {
-        type: Object,
-        required: true,
-    }
-}, { timestamps: true })
+      type: Object,
+      default: Object,
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
 
 // This will create a table or collection if there is no table with that name already.
 const postSchema = mongoose.models.Post || mongoose.model("Post", PostSchema);

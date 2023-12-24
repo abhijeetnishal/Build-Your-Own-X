@@ -1,7 +1,13 @@
 import asyncMiddleware from "../middlewares/async";
 import { NextFunction, Request, Response } from "express";
 import redisConnect from "../config/redisConnect";
-import { savePost, getAllPosts, getPostDetails, updatePost, deletePost } from "../service/postService";
+import {
+  savePost,
+  getAllPosts,
+  getPostDetails,
+  updatePost,
+  deletePost,
+} from "../service/postService";
 import { isValidObjectId } from "mongoose";
 import getUserDetails from "../service/userService";
 import { parseJwt } from "../helper/commonHelper";
@@ -14,7 +20,7 @@ const getUserPosts = asyncMiddleware(
 
       // Check if Object id is valid or not
       if (isValidObjectId(userId)) {
-        const userExist = await getUserDetails({ _id: userId });
+        const userExist = await getUserDetails({ "author._id": userId });
 
         // Check if user registered or not
         if (userExist) {
@@ -39,7 +45,7 @@ const getUserPosts = asyncMiddleware(
             });
           } else {
             // Get user posts
-            const userPosts = await getAllPosts({ userId: userId });
+            const userPosts = await getAllPosts({ "author._id": userId });
 
             if (userPosts.length) {
               // Store the data in Redis(key, value) with options
@@ -161,21 +167,15 @@ const updateSpecificPost = asyncMiddleware(
             const { userId } = parseJwt(token);
 
             //get data from client
-            const { content, image, video } = req.body;
-            
+            const { content } = req.body;
+
             let updatedData: any = {};
-            if(content && content !== ""){
-              updatedData.postContent = content;
+            if (content && content !== "") {
+              updatedData.content = content;
             }
-            if(image && image !== ""){
-              updatedData["postImage"] = image;
-            }
-            if(video && video !== ""){
-              updatedData["postVideo"] = video;
-            }
-        
+
             //update post using postId
-            const data = await updatePost({_id: postId}, updatedData);
+            const data = await updatePost({ _id: postId }, updatedData);
 
             //get client from redisConnect.ts file
             const client = await redisConnect();
@@ -188,7 +188,7 @@ const updateSpecificPost = asyncMiddleware(
               success: true,
               data: data,
               message: "Post updated",
-            })
+            });
           } else {
             return next({
               statusCode: 400,
@@ -235,7 +235,7 @@ const deleteSpecificPost = asyncMiddleware(
             const { userId } = parseJwt(token);
 
             //update post using postId
-            const data = await deletePost({_id: postId});
+            const data = await deletePost({ _id: postId });
 
             //get client from redisConnect.ts file
             const client = await redisConnect();
@@ -248,7 +248,7 @@ const deleteSpecificPost = asyncMiddleware(
               success: true,
               data: data,
               message: "Post Deleted",
-            })
+            });
           } else {
             return next({
               statusCode: 400,
