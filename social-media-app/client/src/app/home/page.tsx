@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import userIcon from "@/../public/user-icon.png";
 import EditModal from "@/components/Modals/EditModal";
-import DeleteModal from "@/components/Modals/DeleteMoodal";
+import DeleteModal from "@/components/Modals/DeleteModal";
 import { useRecoilValue } from "recoil";
 import { profileAtom } from "@/state/profileAtom";
 import useApi from "@/hooks/useApi";
@@ -18,6 +18,7 @@ import RetweetIcon from "@/icons/Retweet";
 import ReplyTweetIcon from "@/icons/Reply";
 import DeleteIcon from "@/icons/Delete";
 import EditIcon from "@/icons/Edit";
+import { PostDetails } from "@/types/post";
 
 function Page() {
   const token = useRecoilValue(authAtom);
@@ -35,6 +36,10 @@ function Page() {
   const [showModal, setShowModal] = useState({
     type: "",
     status: false,
+    postDetails: {
+      _id: "",
+      content: "",
+    },
   });
 
   const [userPosts, setUserPosts] = useState<Array<Object>>([]);
@@ -64,9 +69,9 @@ function Page() {
     setPostContent("");
 
     const newPost = {
-      postContent: postContent,
+      content: postContent,
       author: {
-        id: profile.userId,
+        _id: profile.userId,
         name: profile.userName,
       },
     };
@@ -79,28 +84,35 @@ function Page() {
     );
   };
 
-  const onSubmit = (postId: string, postContent: string) => {
+  const onSubmit = (postDetails: PostDetails, postContent: string) => {
     setShowModal({ ...showModal, status: false });
 
     if (showModal.type && showModal.type === "delete") {
-      const updatedPosts = userPosts.filter((post: any) => post._id !== postId);
+      const updatedPosts = userPosts.filter(
+        (post: any) => post._id !== postDetails._id
+      );
       setUserPosts(updatedPosts);
 
-      deletePostApi(() => () => PostService.deletePost(postId, token));
+      deletePostApi(() => () => PostService.deletePost(postDetails._id, token));
     } else {
       const updatedPosts = userPosts.map((post: any) => {
-        if (post._id === postId) {
+        if (post._id === postDetails._id) {
           return {
             ...post,
-            postContent: postContent,
+            content: postContent,
           };
         }
+        return post;
       });
       setUserPosts(updatedPosts);
 
       updatedPostApi(
         () => () =>
-          PostService.updatePost(postId, { content: postContent }, token)
+          PostService.updatePost(
+            postDetails._id,
+            { content: postContent },
+            token
+          )
       );
     }
   };
@@ -192,7 +204,7 @@ function Page() {
                 <PostLoader loaderLength={5} />
               </section>
             ) : (
-              userPosts?.map((post: any, index) => (
+              userPosts.length && userPosts.map((post: any, index) => (
                 <section
                   key={post._id}
                   className="border-b border-gray-500 pt-[10px]"
@@ -221,6 +233,7 @@ function Page() {
                             ...showModal,
                             type: "update",
                             status: true,
+                            postDetails: post,
                           })
                         }
                       >
@@ -235,50 +248,26 @@ function Page() {
                             ...showModal,
                             type: "delete",
                             status: true,
+                            postDetails: post,
                           })
                         }
                       >
                         <DeleteIcon />
                       </button>
                     </section>
-
-                    {showModal.type === "update" && showModal.status && (
-                      <EditModal
-                        post={post}
-                        onCancel={() =>
-                          setShowModal({
-                            ...showModal,
-                            status: false,
-                          })
-                        }
-                        onUpdate={onSubmit}
-                      />
-                    )}
-
-                    {showModal.type === "delete" && showModal.status && (
-                      <DeleteModal
-                        onCancel={() =>
-                          setShowModal({
-                            ...showModal,
-                            status: false,
-                          })
-                        }
-                        onDelete={() => onSubmit(post._id, "")}
-                      />
-                    )}
                   </section>
 
                   <section className="w-full flex flex-col pl-[35px]">
                     <section className="text-white font-normal text-[16px]">
-                      {post.postContent}
+                      {post.content}
                     </section>
                     <section>
-                      {post.postImage ? (
+                      {post.media ? (
                         <Image
                           width={40}
                           height={40}
                           className="w-full h-[40px]"
-                          src={post.postImage}
+                          src={post.media}
                           alt=""
                         />
                       ) : null}
@@ -295,6 +284,31 @@ function Page() {
               ))
             )}
           </section>
+
+          {showModal.type === "delete" && showModal.status && (
+            <DeleteModal
+              onCancel={() =>
+                setShowModal({
+                  ...showModal,
+                  status: false,
+                })
+              }
+              onDelete={() => onSubmit(showModal.postDetails, "")}
+            />
+          )}
+
+          {showModal.type === "update" && showModal.status && (
+            <EditModal
+              post={showModal.postDetails}
+              onCancel={() =>
+                setShowModal({
+                  ...showModal,
+                  status: false,
+                })
+              }
+              onUpdate={onSubmit}
+            />
+          )}
         </section>
       </article>
     </main>

@@ -1,7 +1,7 @@
 const ImageIcon = () => {
   return (
     <svg
-      className="w-[25px] h-[25px] fill-blue-300"
+      style={{ fill: "blue", width: 25, height: 25 }}
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       id="image"

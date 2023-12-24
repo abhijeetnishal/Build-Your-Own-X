@@ -89,9 +89,11 @@ export default function Page() {
     <main className="w-full h-[calc(100dvh-30px)] flex flex-row xl:flex-row lg:flex-row md:flex-row sm:flex-col xs:flex-col">
       <ToastContainer autoClose={3000} />
 
-      <figure className="w-1/2 xl:w-1/2 lg:w-1/2 md:w-1/2 sm:w-full xs:w-full bg-black flex justify-center items-center">
-        <XIcon />
-      </figure>
+      <section className="w-1/2 xl:w-1/2 lg:w-1/2 md:w-1/2 sm:w-full xs:w-full flex justify-center items-center bg-black">
+        <figure className="w-1/2">
+          <XIcon />
+        </figure>
+      </section>
 
       <section className="w-1/2 xl:w-1/2 lg:w-1/2 md:w-1/2 sm:w-full xs:w-full h-full flex flex-col pl-[100px] xl:pl-[100px] lg:pl-[100px] md:pl-[100px] sm:pl-[0px] xs:pl-[0px] justify-center items-center bg-black text-white">
         <section className="text-[50px] xl:text-[50px] lg:text-[50px] md:text-[35px] sm:text-[50px] xs:text-[32px] font-bold">

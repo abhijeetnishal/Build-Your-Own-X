@@ -1,7 +1,7 @@
 const VideoIcon = () => {
   return (
     <svg
-      className="w-[35px] h-[35px] fill-blue-300"
+      style={{ fill: "blue", width: 35, height: 35 }}
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       id="video-camera"

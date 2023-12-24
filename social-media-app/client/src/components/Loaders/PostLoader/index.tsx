@@ -5,7 +5,7 @@ type Props = {
 };
 
 function PostLoader({loaderLength}: Props) {
-  return Array(loaderLength).fill(0).map((index) => (
+  return Array(loaderLength).fill(0).map((val, index) => (
     <div
       key={index}
       className="p-4 space-y-4 divide-y divide-gray-200 animate-pulse"

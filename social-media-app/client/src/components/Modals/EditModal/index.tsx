@@ -1,11 +1,10 @@
 import userIcon from "@/../public/user-icon.png";
+import { PostDetails } from "@/types/post";
+import Image from "next/image";
 import { useState } from "react";
 
 interface Props {
-  post: {
-    postContent: string;
-    _id: string;
-  };
+  post: PostDetails;
   onCancel: Function;
   onUpdate: Function;
 }
@@ -13,34 +12,33 @@ interface Props {
 function EditModal(props: Props) {
   const { post, onCancel, onUpdate } = props;
 
-  const [postContent, setPostContent] = useState(post.postContent);
+  const [postContent, setPostContent] = useState(post.content);
 
   return (
-    <>
+    <section>
       <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
         <div className="relative my-6 mx-auto w-[420px]">
           {/*content*/}
-          <div className="w-full flex justify-center bg-slate-900 border-0 rounded-[20px] shadow-lg relative flex flex-col w-full outline-none focus:outline-none">
-            <div className="items-center justify-center pt-[10px]">
+          <div className="w-full flex justify-center bg-slate-900 border-0 rounded-[20px] shadow-lg relative flex-col outline-none focus:outline-none">
+            <div className="w-full flex flex-row items-center justify-between pt-[10px] px-8">
               <h3 className="text-xl font-semibold text-white">Edit</h3>
               <button
-                className="hover:bg-blue-700 p-1 ml-auto bg-transparent border-0 text-black opacity-5 float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
+                className="hover:bg-blue-700 p-1 border-0 float-right text-3xl text-gray-700 leading-none font-semibold outline-none focus:outline-none"
                 onClick={() => onCancel()}
-              ></button>
+              >
+                x
+              </button>
             </div>
             {/*body*/}
             <section className="w-full h-[80px] flex flex-row">
-              <figure className="w-[70px] h-full pl-[16px] flex items-center">
-                <img className="w-[35px] h-[35px]" src={userIcon.src} alt="" />
-              </figure>
-              <section className="w-full h-full mr-[16px]">
+              <section className="w-full h-full mx-4">
                 <textarea
                   placeholder=""
                   value={postContent}
                   onChange={(event) => {
                     setPostContent(event.target.value);
                   }}
-                  className="pl-[4px] w-full h-full bg-black border-0 outline-none no-resize appearance-none block w-full text-gray-400 border rounded pl-[4px] pt-[2px] resize-none"
+                  className="w-full h-full bg-black border-1 outline-none resize-none text-gray-400 rounded p-2"
                 ></textarea>
               </section>
             </section>
@@ -48,7 +46,7 @@ function EditModal(props: Props) {
             <div className="flex flex-col items-center justify-end p-4">
               <button
                 className="w-full h-[40px] mb-[5px] border rounded-[20px] text-black bg-white font-bold ease-linear transition-all duration-150"
-                onClick={() => onUpdate(post._id, postContent)}
+                onClick={() => onUpdate(post, postContent)}
               >
                 Update
               </button>
@@ -64,7 +62,7 @@ function EditModal(props: Props) {
         </div>
       </div>
       <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
-    </>
+    </section>
   );
 }
 
