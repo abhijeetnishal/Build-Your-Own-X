@@ -7,6 +7,7 @@ import {
   createPost,
   updateSpecificPost,
   deleteSpecificPost,
+  schedulePost,
 } from "../controllers/postController";
 
 // express.Router() is a method in the Express.js that  Creates a new router object.
@@ -19,6 +20,9 @@ postRouter.get("/:id", isAuthenticated, getUserPosts);
 
 // Create an endpoint for Creating a post.
 postRouter.post("/:id", isAuthenticated, createPost);
+
+// Create an endpoint for schedule posts
+postRouter.post("/schedule/:id", isAuthenticated, schedulePost)
 
 // Create an endpoint for updating a post.
 postRouter.patch("/:id", isAuthenticated, updateSpecificPost);

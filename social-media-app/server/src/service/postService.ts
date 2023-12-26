@@ -1,3 +1,5 @@
+import { scheduledPostSchema } from "../models/scheduledPostModel";
+import { producer } from "../infra/kafka";
 import postSchema from "../models/postModel";
 
 const getPostDetails = (query: Object) => {
@@ -45,6 +47,33 @@ const savePost = (data: object) => {
   );
 };
 
+const saveSchedulePost = (data: object) => {
+  return new Promise(
+    async (resolve: (value?: any) => void, reject: (reason?: any) => void) => {
+      // Create a new post
+      const newPost = new scheduledPostSchema(data);
+      const post = await newPost.save();
+
+      if (post) {
+        resolve(post);
+      } else {
+        reject("Something went wrong!");
+      }
+    }
+  );
+};
+
+const producePostToKafka = async (post: any) => {
+  await producer.connect();
+
+  await producer.send({
+    topic: "scheduled-posts",
+    messages: [post],
+  });
+
+  await producer.disconnect();
+};
+
 const updatePost = (query: Object, updateData: Object) => {
   return new Promise(
     async (resolve: (value?: any) => void, reject: (reason?: any) => void) => {
@@ -60,7 +89,7 @@ const updatePost = (query: Object, updateData: Object) => {
   );
 };
 
-const deletePost = (query: Object)=>{
+const deletePost = (query: Object) => {
   return new Promise(
     async (resolve: (value?: any) => void, reject: (reason?: any) => void) => {
       // Update a post
@@ -73,6 +102,14 @@ const deletePost = (query: Object)=>{
       }
     }
   );
-}
+};
 
-export { getPostDetails, getAllPosts, savePost, updatePost, deletePost };
+export {
+  getPostDetails,
+  getAllPosts,
+  savePost,
+  saveSchedulePost,
+  producePostToKafka,
+  updatePost,
+  deletePost,
+};

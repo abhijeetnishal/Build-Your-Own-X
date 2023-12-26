@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import dbConnect from './config/mongoDBConnect';
+import dbConnect from './infra/mongodb';
 
 // Configure env
 dotenv.config();

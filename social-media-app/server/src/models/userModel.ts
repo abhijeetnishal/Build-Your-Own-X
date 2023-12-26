@@ -1,24 +1,27 @@
 import mongoose from "mongoose";
 
 // Create a userSchema
-const UserSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema(
+  {
     // Specify how the fields should work by adding some mongoose option:
     userName: {
-        type: String,
-        require: true,
-        unique: true
+      type: String,
+      require: true,
+      unique: true,
     },
     password: {
-        type: String,
-        required: true,
-        unique: false,
+      type: String,
+      required: true,
+      unique: false,
     },
     userImage: {
-        type: String,
-        default: '',
-        required: false
+      type: String,
+      default: "",
+      required: false,
     },
-}, { timestamps: true })
+  },
+  { timestamps: true }
+);
 
 // This will create a table or collection if there is no table with that name already.
 const userSchema = mongoose.models.User || mongoose.model("User", UserSchema);

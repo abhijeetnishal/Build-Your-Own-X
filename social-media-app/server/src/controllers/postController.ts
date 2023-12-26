@@ -1,16 +1,18 @@
 import asyncMiddleware from "../middlewares/async";
 import { NextFunction, Request, Response } from "express";
-import redisConnect from "../config/redisConnect";
 import {
   savePost,
   getAllPosts,
   getPostDetails,
   updatePost,
   deletePost,
+  producePostToKafka,
+  saveSchedulePost,
 } from "../service/postService";
 import { isValidObjectId } from "mongoose";
 import getUserDetails from "../service/userService";
 import { parseJwt } from "../helper/commonHelper";
+import redisConnect from "../infra/redis";
 
 const getUserPosts = asyncMiddleware(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -125,6 +127,60 @@ const createPost = asyncMiddleware(
               statusCode: 200,
               message: "Post created",
               data: newPost,
+            });
+          }
+        } else {
+          return next({
+            statusCode: 400,
+            message: "User doesn't exist",
+          });
+        }
+      } else {
+        return next({
+          statusCode: 401,
+          message: "Invalid mongo object id",
+        });
+      }
+    } catch (error) {
+      return next({
+        statusCode: 500,
+        message: error.message,
+      });
+    }
+  }
+);
+
+const schedulePost = asyncMiddleware(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Get userId from req
+      const userId = req.params.id;
+
+      // Check if Object id is valid or not
+      if (isValidObjectId(userId)) {
+        const userExist = await getUserDetails({ _id: userId });
+
+        // Check if user registered or not
+        if (userExist) {
+          // Get data from req
+          const { postDetails } = req.body;
+
+          // Check content is present or not
+          if (!postDetails) {
+            // Bad request (400)
+            return next({
+              statusCode: 400,
+              message: "enter content data",
+            });
+          } else {
+            const scheduledPost = await saveSchedulePost(postDetails);
+            await producePostToKafka(scheduledPost);
+
+            return next({
+              statusCode: 200,
+              success: true,
+              data: scheduledPost,
+              message: "Post scheduled",
             });
           }
         } else {
@@ -276,4 +332,10 @@ const deleteSpecificPost = asyncMiddleware(
   }
 );
 
-export { getUserPosts, createPost, updateSpecificPost, deleteSpecificPost };
+export {
+  getUserPosts,
+  createPost,
+  schedulePost,
+  updateSpecificPost,
+  deleteSpecificPost,
+};
