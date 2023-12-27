@@ -1,7 +1,6 @@
 export type Post = {
-    postContent: string;
-    postImage: string,
-    postVideo: string,
+    content: string;
+    media?: Object;
     author: {
         id: string;
         name: string;

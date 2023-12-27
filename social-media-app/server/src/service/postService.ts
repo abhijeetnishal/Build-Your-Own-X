@@ -1,6 +1,7 @@
 import { scheduledPostSchema } from "../models/scheduledPostModel";
 import { producer } from "../infra/kafka";
 import postSchema from "../models/postModel";
+import { Post } from "post";
 
 const getPostDetails = (query: Object) => {
   return new Promise(
@@ -63,12 +64,12 @@ const saveSchedulePost = (data: object) => {
   );
 };
 
-const producePostToKafka = async (post: any) => {
+const producePostToKafka = async (post: Post) => {
   await producer.connect();
 
   await producer.send({
     topic: "scheduled-posts",
-    messages: [post],
+    messages: [{ value: JSON.stringify(post) }],
   });
 
   await producer.disconnect();

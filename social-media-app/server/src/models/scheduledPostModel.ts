@@ -12,7 +12,7 @@ const ScheduledPostSchema = new mongoose.Schema(
       type: Object,
       default: {},
     },
-    scheduledTime: {
+    time: {
       type: Date,
       required: true,
       default: new Date(),

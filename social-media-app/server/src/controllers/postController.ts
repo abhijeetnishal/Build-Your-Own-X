@@ -13,6 +13,7 @@ import { isValidObjectId } from "mongoose";
 import getUserDetails from "../service/userService";
 import { parseJwt } from "../helper/commonHelper";
 import redisConnect from "../infra/redis";
+import { startWorker } from "../infra/kafka";
 
 const getUserPosts = asyncMiddleware(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -170,16 +171,17 @@ const schedulePost = asyncMiddleware(
             // Bad request (400)
             return next({
               statusCode: 400,
-              message: "enter content data",
+              message: "enter post details",
             });
           } else {
-            const scheduledPost = await saveSchedulePost(postDetails);
-            await producePostToKafka(scheduledPost);
+            //const scheduledPost = await saveSchedulePost(postDetails);
+            await producePostToKafka(postDetails);
+            startWorker();
 
             return next({
               statusCode: 200,
               success: true,
-              data: scheduledPost,
+              data: postDetails,
               message: "Post scheduled",
             });
           }
