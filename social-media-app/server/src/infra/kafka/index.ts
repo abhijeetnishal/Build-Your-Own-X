@@ -7,7 +7,7 @@ const kafka = new Kafka({
   brokers: [process.env.KAFKA_BROKER], // Replace with your Kafka broker
   ssl: true,
   sasl: {
-    mechanism: "plain", // Replace with your SASL mechanism
+    mechanism: "scram-sha-256", // Replace with your SASL mechanism
     username: process.env.KAFKA_USERNAME, // Replace with your username
     password: process.env.KAFKA_PASSWORD, // Replace with your password
   },
@@ -22,7 +22,7 @@ const consumer = kafka.consumer({ groupId: "post-scheduler-workers" });
 async function startWorker() {
   try {
     await consumer.connect();
-    await consumer.subscribe({ topic: "schedule_post", fromBeginning: true });
+    await consumer.subscribe({ topic: "scheduled-posts", fromBeginning: true });
 
     await consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
@@ -50,4 +50,4 @@ async function startWorker() {
   }
 }
 
-export { producer, consumer, startWorker };
+export { kafka, producer, consumer, startWorker };
