@@ -6,7 +6,11 @@ import relationshipSchema from "../models/relationshipModel";
 import postSchema from "../models/postModel";
 import { parseJwt, validatePassword } from "../helper/commonHelper";
 import asyncMiddleware from "../middlewares/async";
-import getUserDetails from "../service/userService";
+import {
+  getUserDetails,
+  getFollowerDetails,
+  addFollowerDetails,
+} from "../service/userService";
 import { isValidObjectId } from "mongoose";
 
 /*
@@ -260,38 +264,55 @@ const followingDetails = async (req: Request, res: Response) => {
   }
 };
 
-const addFollowerFollowing = async (req: Request, res: Response) => {
-  try {
-    //get user follower and following Id
-    const { followerId, followingId } = req.body;
+const addFollower = asyncMiddleware(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Get follower and followee id from req
+      const { followerId, followeeId } = req.body;
 
-    //check user following other user or not
-    const isFollowing = await relationshipSchema.findOne({
-      followingId: followingId,
-      followerId: followerId,
-    });
+      // Check Id's are present or not
+      if (followeeId && followerId) {
+        // Check Id's are valid or not
+        if (isValidObjectId(followeeId) && isValidObjectId(followerId)) {
+          // Check if user is already following other user or not
+          const isFollowing = await getFollowerDetails(followerId, followeeId);
 
-    if (isFollowing) {
-      return res.status(400).json({ message: "already following" });
-    } else {
-      //insert data into DB
-      const followerFollowingData = new relationshipSchema({
-        followerId: followerId,
-        followingId: followingId,
-      });
+          if (isFollowing) {
+            return next({
+              statusCode: 400,
+              message: "User already following",
+            });
+          } else {
+            //insert data into DB
+            const follower = await addFollowerDetails(followerId, followeeId);
 
-      await followerFollowingData.save();
-
-      return res.status(201).json({
-        message: "follower following data added",
-        data: followerFollowingData,
+            return next({
+              statusCode: 200,
+              status: true,
+              message: "User follower added",
+              data: follower,
+            });
+          }
+        } else {
+          return next({
+            statusCode: 401,
+            message: "Invalid mongo object id",
+          });
+        }
+      } else {
+        return next({
+          statusCode: 400,
+          message: "Require follower/followee Id's",
+        });
+      }
+    } catch (error) {
+      return next({
+        statusCode: 500,
+        message: error.message,
       });
     }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "internal server error: " + error });
   }
-};
+);
 
 const deleteFollowerFollowing = async (req: Request, res: Response) => {
   try {
@@ -358,7 +379,7 @@ export {
   profileDetails,
   followerDetails,
   followingDetails,
-  addFollowerFollowing,
+  addFollower,
   deleteFollowerFollowing,
   getAllFollowingUsersPosts,
 };

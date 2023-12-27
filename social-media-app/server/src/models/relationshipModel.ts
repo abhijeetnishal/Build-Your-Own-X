@@ -9,7 +9,7 @@ const RelationshipSchema = new mongoose.Schema(
       required: true,
     },
     // References the following user's _id from User collection
-    followingId: {
+    followeeId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },

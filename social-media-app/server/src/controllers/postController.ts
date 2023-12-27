@@ -7,10 +7,9 @@ import {
   updatePost,
   deletePost,
   producePostToKafka,
-  saveSchedulePost,
 } from "../service/postService";
 import { isValidObjectId } from "mongoose";
-import getUserDetails from "../service/userService";
+import { getUserDetails } from "../service/userService";
 import { parseJwt } from "../helper/commonHelper";
 import redisConnect from "../infra/redis";
 import { startWorker } from "../infra/kafka";
