@@ -10,8 +10,10 @@ import {
   getUserDetails,
   getFollowerDetails,
   addFollowerDetails,
+  removeFollowerDetails,
+  getAllFollowers,
 } from "../service/userService";
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 
 /*
 1. Take user data: {username, email, password, etc}
@@ -200,69 +202,112 @@ const profileDetails = async (req: Request, res: Response) => {
   }
 };
 
-const followerDetails = async (req: Request, res: Response) => {
-  try {
-    // Get user Id from req
-    const userId = req.params.id;
+/*
+1. Get all followee Id's from relationship collection using follower Id(user Id)
+2. Get all profile details of followee Id's using aggregation
+3. Send all details to client
+*/
+const followerDetails = asyncMiddleware(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Get user Id from req
+      const userId = req.params.id;
 
-    // Get followers list
-    const followersList = await relationshipSchema.find({ followerId: userId });
+      // Check user Id is present or not
+      if (userId) {
+        // Check Id's are valid or not
+        if (isValidObjectId(userId)) {
+          // Check if user exists or not
+          const userExist = await getUserDetails({ _id: userId });
 
-    // Get followers Id
-    let followersId: Object[] = [];
-    followersList.map((follower) => {
-      followersId.push(follower.followingId);
-    });
+          if (userExist) {
+            const followers = await getAllFollowers("followerId", {
+              followerId: new mongoose.Types.ObjectId(userId),
+            });
 
-    const followersDetails: Object[] = [];
-
-    // Get usernames from followers id
-    for (const id of followersId) {
-      const userDetails = await userSchema.findOne({ _id: id });
-      followersDetails.push({ userDetails, userId });
+            return next({
+              statusCode: 200,
+              success: true,
+              data: followers,
+              message: "All followers details",
+            });
+          } else {
+            return next({
+              statusCode: 401,
+              message: "User doesn't exist",
+            });
+          }
+        } else {
+          return next({
+            statusCode: 401,
+            message: "Invalid mongo object Id",
+          });
+        }
+      } else {
+        return next({
+          statusCode: 400,
+          message: "Require user Id",
+        });
+      }
+    } catch (error) {
+      return next({
+        statusCode: 500,
+        message: error.message,
+      });
     }
-
-    return res
-      .status(201)
-      .json({ message: "follower list: ", data: followersDetails });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "internal server error: " + error });
   }
-};
+);
 
-const followingDetails = async (req: Request, res: Response) => {
-  try {
-    //get user Id from cookies
-    const userId = req.cookies.user_cookies.userId;
+const followingDetails = asyncMiddleware(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Get user Id from req
+      const userId = req.params.id;
 
-    //get followers list
-    const followingList = await relationshipSchema.find({
-      followingId: userId,
-    });
+      // Check user Id is present or not
+      if (userId) {
+        // Check Id's are valid or not
+        if (isValidObjectId(userId)) {
+          // Check if user exists or not
+          const userExist = await getUserDetails({ _id: userId });
 
-    //get followers Id
-    let followingId: Object[] = [];
-    followingList.map((following) => {
-      followingId.push(following.followerId);
-    });
+          if (userExist) {
+            const followings = await getAllFollowers("followeeId", {
+              followeeId: new mongoose.Types.ObjectId(userId),
+            });
 
-    const followingDetails: Object[] = [];
-
-    //get usernames from followers id
-    for (const userId of followingId) {
-      const userName = await userSchema.findOne({ _id: userId });
-      if (userName._id !== userId) followingDetails.push(userName);
+            return next({
+              statusCode: 200,
+              success: true,
+              data: followings,
+              message: "All followings details",
+            });
+          } else {
+            return next({
+              statusCode: 401,
+              message: "User doesn't exist",
+            });
+          }
+        } else {
+          return next({
+            statusCode: 401,
+            message: "Invalid mongo object Id",
+          });
+        }
+      } else {
+        return next({
+          statusCode: 400,
+          message: "Require user Id",
+        });
+      }
+    } catch (error) {
+      return next({
+        statusCode: 500,
+        message: error.message,
+      });
     }
-
-    return res
-      .status(201)
-      .json({ message: "following list: ", data: followingDetails });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "internal server error: " + error });
   }
-};
+);
 
 const addFollower = asyncMiddleware(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -283,7 +328,7 @@ const addFollower = asyncMiddleware(
               message: "User already following",
             });
           } else {
-            //insert data into DB
+            // Add follower
             const follower = await addFollowerDetails(followerId, followeeId);
 
             return next({
@@ -296,7 +341,7 @@ const addFollower = asyncMiddleware(
         } else {
           return next({
             statusCode: 401,
-            message: "Invalid mongo object id",
+            message: "Invalid mongo object Id",
           });
         }
       } else {
@@ -314,29 +359,58 @@ const addFollower = asyncMiddleware(
   }
 );
 
-const deleteFollowerFollowing = async (req: Request, res: Response) => {
-  try {
-    //get user follower and following Id
-    const { followerId, followingId } = req.body;
+const deleteFollowerFollowing = asyncMiddleware(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Get follower and followee id from req
+      const { followerId, followeeId } = req.body;
 
-    //get follower and following details
-    const followerFollowingData = await relationshipSchema.findOne({
-      followerId: followerId,
-      followingId: followingId,
-    });
+      // Check Id's are present or not
+      if (followeeId && followerId) {
+        // Check Id's are valid or not
+        if (isValidObjectId(followeeId) && isValidObjectId(followerId)) {
+          // Check if user is following other user or not
+          const isFollowing = await getFollowerDetails(followerId, followeeId);
 
-    //extract _id
-    const followerFollowingId = followerFollowingData._id;
+          if (!isFollowing) {
+            return next({
+              statusCode: 400,
+              message: "User not following",
+            });
+          } else {
+            // remove follower
+            const follower = await removeFollowerDetails(
+              followerId,
+              followeeId
+            );
 
-    //delete
-    await relationshipSchema.findByIdAndRemove(followerFollowingId);
-
-    return res.status(200).json({ message: "data deleted" });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "internal server error: " + error });
+            return next({
+              statusCode: 200,
+              status: true,
+              message: "User follower removed",
+              data: follower,
+            });
+          }
+        } else {
+          return next({
+            statusCode: 401,
+            message: "Invalid mongo object Id",
+          });
+        }
+      } else {
+        return next({
+          statusCode: 400,
+          message: "Require follower/followee Id's",
+        });
+      }
+    } catch (error) {
+      return next({
+        statusCode: 500,
+        message: error.message,
+      });
+    }
   }
-};
+);
 
 const getAllFollowingUsersPosts = async (req: Request, res: Response) => {
   try {

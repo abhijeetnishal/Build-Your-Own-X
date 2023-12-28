@@ -78,7 +78,7 @@ const getUserPosts = asyncMiddleware(
       } else {
         return next({
           statusCode: 401,
-          message: "Invalid mongo object id",
+          message: "Invalid mongo object Id",
         });
       }
     } catch (error) {
@@ -138,7 +138,7 @@ const createPost = asyncMiddleware(
       } else {
         return next({
           statusCode: 401,
-          message: "Invalid mongo object id",
+          message: "Invalid mongo object Id",
         });
       }
     } catch (error) {
@@ -193,7 +193,7 @@ const schedulePost = asyncMiddleware(
       } else {
         return next({
           statusCode: 401,
-          message: "Invalid mongo object id",
+          message: "Invalid mongo object Id",
         });
       }
     } catch (error) {
@@ -315,7 +315,7 @@ const deleteSpecificPost = asyncMiddleware(
         } else {
           return next({
             statusCode: 401,
-            message: "Invalid mongo object id",
+            message: "Invalid mongo object Id",
           });
         }
       } else {

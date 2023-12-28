@@ -26,11 +26,11 @@ userRouter.post("/login", login);
 // Create an endpoint to get profile details.
 userRouter.get("/details", isAuthenticated, profileDetails);
 
-// Create an endpoint to get follower list.
-userRouter.get("/follower", isAuthenticated, followerDetails);
+// Create an endpoint to get followers list.
+userRouter.get("/follower/:id", isAuthenticated, followerDetails);
 
 // Create an endpoint to get following list.
-userRouter.get("/following", isAuthenticated, followingDetails);
+userRouter.get("/following/:id", isAuthenticated, followingDetails);
 
 // Create an endpoint to add follower.
 userRouter.post("/follow", isAuthenticated, addFollower);
