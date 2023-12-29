@@ -85,7 +85,8 @@ const getAllFollowers = (userIdType: string, query: Object) => {
           // and store details inside followerDetails list
           $lookup: {
             from: "users",
-            localField: userIdType,
+            localField:
+              userIdType === "followerId" ? "followeeId" : "followerId",
             foreignField: "_id",
             as: "userDetails",
           },
@@ -103,7 +104,6 @@ const getAllFollowers = (userIdType: string, query: Object) => {
           },
         },
       ]);
-      //const followeeIds = await relationshipSchema.find(query).select(["followeeId"]);
 
       resolve(followerDetails);
     }
