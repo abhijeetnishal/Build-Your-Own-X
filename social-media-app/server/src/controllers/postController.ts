@@ -7,8 +7,9 @@ import {
   updatePost,
   deletePost,
   producePostToKafka,
+  getAllFollowingUsersPosts,
 } from "../service/postService";
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import { getUserDetails } from "../service/userService";
 import { parseJwt } from "../helper/commonHelper";
 import redisConnect from "../infra/redis";
@@ -79,6 +80,57 @@ const getUserPosts = asyncMiddleware(
         return next({
           statusCode: 401,
           message: "Invalid mongo object Id",
+        });
+      }
+    } catch (error) {
+      return next({
+        statusCode: 500,
+        message: error.message,
+      });
+    }
+  }
+);
+
+const followingUsersPosts = asyncMiddleware(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Get user Id from req
+      const userId = req.params.id;
+
+      // Check user Id is present or not
+      if (userId) {
+        // Check Id's are valid or not
+        if (isValidObjectId(userId)) {
+          // Check if user exists or not
+          const userExist = await getUserDetails({ _id: userId });
+
+          if (userExist) {
+            const posts = await getAllFollowingUsersPosts({
+              followeeId: new mongoose.Types.ObjectId(userId),
+            });
+
+            return next({
+              statusCode: 200,
+              success: true,
+              data: posts,
+              message: "Following users posts",
+            });
+          } else {
+            return next({
+              statusCode: 401,
+              message: "User User doesn't exist",
+            });
+          }
+        } else {
+          return next({
+            statusCode: 401,
+            message: "Invalid mongo object Id",
+          });
+        }
+      } else {
+        return next({
+          statusCode: 400,
+          message: "Require user Id",
         });
       }
     } catch (error) {
@@ -335,6 +387,7 @@ const deleteSpecificPost = asyncMiddleware(
 
 export {
   getUserPosts,
+  followingUsersPosts,
   createPost,
   schedulePost,
   updateSpecificPost,

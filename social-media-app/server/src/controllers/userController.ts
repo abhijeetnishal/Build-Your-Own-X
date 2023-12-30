@@ -2,8 +2,6 @@ import userSchema from "../models/userModel";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
-import relationshipSchema from "../models/relationshipModel";
-import postSchema from "../models/postModel";
 import { parseJwt, validatePassword } from "../helper/commonHelper";
 import asyncMiddleware from "../middlewares/async";
 import {
@@ -359,7 +357,7 @@ const addFollower = asyncMiddleware(
   }
 );
 
-const deleteFollowerFollowing = asyncMiddleware(
+const removeFollower = asyncMiddleware(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       // Get follower and followee id from req
@@ -412,41 +410,6 @@ const deleteFollowerFollowing = asyncMiddleware(
   }
 );
 
-const getAllFollowingUsersPosts = async (req: Request, res: Response) => {
-  try {
-    //get userId from cookies
-    const userId = req.cookies.user_cookies.userId;
-
-    //get following users data
-    const followingUsersList = await relationshipSchema.find({
-      followerId: userId,
-    });
-
-    //get following users Id from data
-    let followingUserIdList: object[] = [];
-    followingUsersList.map((following) => {
-      followingUserIdList.push(following.followingId);
-    });
-
-    //get following users posts
-    let followingUsersPosts;
-    for (const userId of followingUserIdList) {
-      followingUsersPosts = await postSchema
-        .find({ userId: userId })
-        .sort({ updatedAt: -1 }) // Sort by createdAt in descending order
-        .populate("userId", "userName"); // Populate user data with username
-    }
-
-    return res.status(200).json({
-      message: "all following users posts: ",
-      data: followingUsersPosts,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "internal server error: " + error });
-  }
-};
-
 export {
   signup,
   login,
@@ -454,6 +417,5 @@ export {
   followerDetails,
   followingDetails,
   addFollower,
-  deleteFollowerFollowing,
-  getAllFollowingUsersPosts,
+  removeFollower,
 };

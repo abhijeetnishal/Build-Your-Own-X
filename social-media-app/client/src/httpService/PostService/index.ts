@@ -1,8 +1,18 @@
 import request from "../request";
 
-const getOwnPosts = (userId: string, token: string) => {
+const getUserPosts = (userId: string, token: string) => {
   return request({
     url: `/api/v1/post/${userId}`,
+    method: "GET",
+    headers: {
+      "x-auth-token": token,
+    },
+  });
+};
+
+const getFollowingUsersPosts = (userId: string, token: string) => {
+  return request({
+    url: `/api/v1/post/following-users/${userId}`,
     method: "GET",
     headers: {
       "x-auth-token": token,
@@ -43,7 +53,8 @@ const deletePost = (postId: string, token: string) => {
 };
 
 const PostService = {
-  getOwnPosts,
+  getUserPosts,
+  getFollowingUsersPosts,
   createPost,
   updatePost,
   deletePost,

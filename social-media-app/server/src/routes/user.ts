@@ -7,8 +7,7 @@ import {
   followerDetails,
   followingDetails,
   addFollower,
-  deleteFollowerFollowing,
-  getAllFollowingUsersPosts,
+  removeFollower,
   profileDetails,
 } from "../controllers/userController";
 
@@ -36,14 +35,7 @@ userRouter.get("/following/:id", isAuthenticated, followingDetails);
 userRouter.post("/follow", isAuthenticated, addFollower);
 
 // Create an endpoint to remove follower.
-userRouter.delete("/unfollow", isAuthenticated, deleteFollowerFollowing);
-
-// Create an endpoint for getting all following users posts.
-userRouter.get(
-  "/following-users-posts",
-  isAuthenticated,
-  getAllFollowingUsersPosts
-);
+userRouter.delete("/unfollow", isAuthenticated, removeFollower);
 
 // Export to router to use in other files (index.js file)
 export default userRouter;

@@ -2,6 +2,7 @@ import { scheduledPostSchema } from "../models/scheduledPostModel";
 import { producer } from "../infra/kafka";
 import postSchema from "../models/postModel";
 import { Post } from "post";
+import relationshipSchema from "../models/relationshipModel";
 
 const getPostDetails = (query: Object) => {
   return new Promise(
@@ -14,6 +15,55 @@ const getPostDetails = (query: Object) => {
       } else {
         reject("Something went wrong!");
       }
+    }
+  );
+};
+
+const getAllFollowingUsersPosts = (query: Object) => {
+  return new Promise(
+    async (resolve: (value?: any) => void, reject: (reason?: any) => void) => {
+      const posts = await relationshipSchema.aggregate([
+        {
+          $match: query,
+        },
+        {
+          $project: {
+            _id: 0,
+            followerId: 1,
+          },
+        },
+        {
+          $lookup: {
+            from: "posts",
+            localField: "followerId",
+            foreignField: "author._id",
+            as: "posts",
+          },
+        },
+        {
+          $unwind: "$posts",
+        },
+        {
+          $project: {
+            content: "$posts.content",
+            author: {
+              _id: "$posts.author._id",
+              name: "$posts.author.name",
+            },
+            updatedAt: "$posts.updatedAt",
+          },
+        },
+        {
+          $sort: {
+            updatedAt: -1
+          }
+        },
+        // {
+        //   $limit: 10
+        // }
+      ]);
+
+      resolve(posts);
     }
   );
 };
@@ -108,6 +158,7 @@ const deletePost = (query: Object) => {
 export {
   getPostDetails,
   getAllPosts,
+  getAllFollowingUsersPosts,
   savePost,
   saveSchedulePost,
   producePostToKafka,

@@ -24,12 +24,6 @@ function Page() {
   const token = useRecoilValue(authAtom);
   const profile = useRecoilValue(profileAtom);
 
-  // Custom hook for API
-  const [{}, createPostApi] = useApi(null);
-  const [{ data, isLoading, isError }, getPostsApi] = useApi(null);
-  const [{}, deletePostApi] = useApi(null);
-  const [{}, updatedPostApi] = useApi(null);
-
   const [btnName, setBtnName] = useState<string>("for-you");
   const [postContent, setPostContent] = useState<string>("");
 
@@ -46,24 +40,65 @@ function Page() {
   const [followingUsersPosts, setFollowingUsersPosts] = useState<Array<Object>>(
     []
   );
-  const [isFollowingPostLoading, setIsFollowingPostLoading] =
-    useState<boolean>(false);
+  const [posts, setPosts] = useState<Array<Object>>([]);
+
+  // Custom hooks for APIs
+  const [{}, createPostApi] = useApi(null);
+  const [{}, deletePostApi] = useApi(null);
+  const [{}, updatedPostApi] = useApi(null);
+  const [
+    {
+      data: userPostsData,
+      isLoading: isUserPostsLoading,
+      isError: isUserPostsError,
+    },
+    getUserPostsApi,
+  ] = useApi(null);
+  const [
+    {
+      data: followingUsersPostsData,
+      isLoading: isFollowingUsersPostsLoading,
+      isError: isFollowingUsersPostsError,
+    },
+    getFollowingUsersPostsApi,
+  ] = useApi(null);
 
   useEffect(() => {
     if (profile && profile.userId) {
-      getPostsApi(() => () => PostService.getOwnPosts(profile.userId, token));
+      getUserPostsApi(
+        () => () => PostService.getUserPosts(profile.userId, token)
+      );
     }
   }, [token]);
 
   useEffect(() => {
-    if (data && data.code) {
-      const { code, data: result } = data;
+    if (userPostsData && userPostsData.code) {
+      const { code, data: result } = userPostsData;
 
       if (code === 200) {
         setUserPosts(result);
+        setPosts(result);
       }
     }
-  }, [data, isError]);
+  }, [userPostsData, isUserPostsError]);
+
+  useEffect(() => {
+    if (profile && profile.userId) {
+      getFollowingUsersPostsApi(
+        () => () => PostService.getFollowingUsersPosts(profile.userId, token)
+      );
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (followingUsersPostsData && followingUsersPostsData.code) {
+      const { code, data: result } = followingUsersPostsData;
+
+      if (code === 200) {
+        setFollowingUsersPosts(result);
+      }
+    }
+  }, [followingUsersPostsData, isFollowingUsersPostsError]);
 
   const handleSubmit = async () => {
     setPostContent("");
@@ -76,6 +111,7 @@ function Page() {
       },
     };
 
+    setPosts([newPost, ...userPosts]);
     setUserPosts([newPost, ...userPosts]);
 
     createPostApi(
@@ -92,6 +128,7 @@ function Page() {
         (post: any) => post._id !== postDetails._id
       );
       setUserPosts(updatedPosts);
+      setPosts(updatedPosts);
 
       deletePostApi(() => () => PostService.deletePost(postDetails._id, token));
     } else {
@@ -105,6 +142,7 @@ function Page() {
         return post;
       });
       setUserPosts(updatedPosts);
+      setPosts(updatedPosts);
 
       updatedPostApi(
         () => () =>
@@ -117,6 +155,16 @@ function Page() {
     }
   };
 
+  const onOptionSelect = (type: string) => {
+    if (type === "for-you") {
+      setBtnName("for-you");
+      setPosts(userPosts);
+    } else {
+      setBtnName("following");
+      setPosts(followingUsersPosts);
+    }
+  };
+
   return (
     <main className="w-full h-[100dvh] bg-black flex flex-col">
       <section className="w-full text-white text-[20px] font-bold pt-[25px] pl-[16px]">
@@ -126,7 +174,7 @@ function Page() {
         <section className="w-full h-[60px] flex flex-row justify-around border-b border-gray-700">
           <button
             onClick={() => {
-              setBtnName("for-you");
+              onOptionSelect("for-you");
             }}
             className="w-1/2 h-full flex justify-center items-end hover:bg-gray-800"
           >
@@ -142,7 +190,7 @@ function Page() {
           </button>
           <button
             onClick={() => {
-              setBtnName("following");
+              onOptionSelect("following");
             }}
             className="w-1/2 h-full flex justify-center items-end hover:bg-gray-800"
           >
@@ -158,53 +206,57 @@ function Page() {
           </button>
         </section>
 
-        <section className="w-full h-[180px] flex flex-col pt-[15px]">
-          <section className="w-full h-[40px] flex flex-row">
-            <figure className="w-[70px] h-full pl-[16px] pr-[8px]">
-              <Image width={35} height={35} src={userIcon.src} alt="" />
-            </figure>
+        {btnName === "following" ? null : (
+          <section className="w-full h-[180px] flex flex-col pt-[15px]">
+            <section className="w-full h-[40px] flex flex-row">
+              <figure className="w-[70px] h-full pl-[16px] pr-[8px]">
+                <Image width={35} height={35} src={userIcon.src} alt="" />
+              </figure>
 
-            <section className="w-full h-full pl-[10px]">
-              <input
-                type="text"
-                placeholder="What is happening?!"
-                value={postContent}
-                onChange={(event) => {
-                  setPostContent(event.target.value);
-                }}
-                className="h-full text-[20px] outline-none bg-black text-white"
-              />
+              <section className="w-full h-full pl-[10px]">
+                <input
+                  type="text"
+                  placeholder="What is happening?!"
+                  value={postContent}
+                  onChange={(event) => {
+                    setPostContent(event.target.value);
+                  }}
+                  className="h-full text-[20px] outline-none bg-black text-white"
+                />
+              </section>
+            </section>
+
+            <section className="ml-[60px] mr-[50px] border-b border-gray-700 pt-[40px]"></section>
+            <section className="w-full flex flex-row pl-[60px] pt-[10px] pb-[20px] border-b border-gray-700">
+              <button className="pr-[10px]">
+                <ImageIcon />
+              </button>
+              <button className="pl-[10px] pr-[50px]">
+                <VideoIcon />
+              </button>
+              <button
+                disabled={!postContent?.length}
+                onClick={handleSubmit}
+                className="w-[80px] h-[30px] border rounded-[20px] bg-blue-500 disabled:bg-gray-600 outline-none"
+              >
+                <section className="text-[15px] font-semibold text-white">
+                  Post
+                </section>
+              </button>
             </section>
           </section>
-
-          <section className="ml-[60px] mr-[50px] border-b border-gray-700 pt-[40px]"></section>
-          <section className="w-full flex flex-row pl-[60px] pt-[10px] pb-[20px] border-b border-gray-700">
-            <button className="pr-[10px]">
-              <ImageIcon />
-            </button>
-            <button className="pl-[10px] pr-[50px]">
-              <VideoIcon />
-            </button>
-            <button
-              disabled={!postContent.length}
-              onClick={handleSubmit}
-              className="w-[80px] h-[30px] border rounded-[20px] bg-blue-500 disabled:bg-gray-600 outline-none"
-            >
-              <section className="text-[15px] font-semibold text-white">
-                Post
-              </section>
-            </button>
-          </section>
-        </section>
+        )}
 
         <section className="w-full h-[430px] flex flex-col overflow-x-auto">
           <section className="w-full h-full flex flex-col px-[16px]">
-            {isLoading ? (
+            {isUserPostsLoading || isFollowingUsersPostsLoading ? (
               <section className="w-full h-full">
                 <PostLoader loaderLength={5} />
               </section>
             ) : (
-              userPosts.length && userPosts.map((post: any, index) => (
+              posts &&
+              posts.length &&
+              posts.map((post: any, index) => (
                 <section
                   key={post._id}
                   className="border-b border-gray-500 pt-[10px]"
@@ -224,37 +276,39 @@ function Page() {
                       </section>
                     </section>
 
-                    <section className="flex flex-row">
-                      <button
-                        className="w-full h-[30px] shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                        type="button"
-                        onClick={() =>
-                          setShowModal({
-                            ...showModal,
-                            type: "update",
-                            status: true,
-                            postDetails: post,
-                          })
-                        }
-                      >
-                        <EditIcon />
-                      </button>
+                    {btnName === "following" ? null : (
+                      <section className="flex flex-row">
+                        <button
+                          className="w-full h-[30px] shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                          type="button"
+                          onClick={() =>
+                            setShowModal({
+                              ...showModal,
+                              type: "update",
+                              status: true,
+                              postDetails: post,
+                            })
+                          }
+                        >
+                          <EditIcon />
+                        </button>
 
-                      <button
-                        className="w-full h-[30px] shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                        type="button"
-                        onClick={() =>
-                          setShowModal({
-                            ...showModal,
-                            type: "delete",
-                            status: true,
-                            postDetails: post,
-                          })
-                        }
-                      >
-                        <DeleteIcon />
-                      </button>
-                    </section>
+                        <button
+                          className="w-full h-[30px] shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                          type="button"
+                          onClick={() =>
+                            setShowModal({
+                              ...showModal,
+                              type: "delete",
+                              status: true,
+                              postDetails: post,
+                            })
+                          }
+                        >
+                          <DeleteIcon />
+                        </button>
+                      </section>
+                    )}
                   </section>
 
                   <section className="w-full flex flex-col pl-[35px]">
