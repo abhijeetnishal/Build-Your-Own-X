@@ -55,8 +55,8 @@ const getAllFollowingUsersPosts = (query: Object) => {
         },
         {
           $sort: {
-            updatedAt: -1
-          }
+            updatedAt: -1,
+          },
         },
         // {
         //   $limit: 10
@@ -115,14 +115,10 @@ const saveSchedulePost = (data: object) => {
 };
 
 const producePostToKafka = async (post: Post) => {
-  await producer.connect();
+  const prod = producer;
 
-  await producer.send({
-    topic: "scheduled-posts",
-    messages: [{ value: JSON.stringify(post) }],
-  });
-
-  await producer.disconnect();
+  const message = { "post": post };
+  await prod.produce("schedule_post", JSON.stringify(message));
 };
 
 const updatePost = (query: Object, updateData: Object) => {

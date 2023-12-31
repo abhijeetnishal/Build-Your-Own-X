@@ -13,7 +13,7 @@ import mongoose, { isValidObjectId } from "mongoose";
 import { getUserDetails } from "../service/userService";
 import { parseJwt } from "../helper/commonHelper";
 import redisConnect from "../infra/redis";
-import { startWorker } from "../infra/kafka";
+import { consumer } from "../infra/kafka";
 
 const getUserPosts = asyncMiddleware(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -227,12 +227,18 @@ const schedulePost = asyncMiddleware(
           } else {
             //const scheduledPost = await saveSchedulePost(postDetails);
             await producePostToKafka(postDetails);
-            startWorker();
+
+            const messages = await consumer.consume({
+              consumerGroupId: "group_1",
+              instanceId: "instance_1",
+              topics: ["schedule_post"],
+              autoOffsetReset: "earliest",
+            });
 
             return next({
               statusCode: 200,
               success: true,
-              data: postDetails,
+              data: messages,
               message: "Post scheduled",
             });
           }
