@@ -26,7 +26,6 @@ const dataFetchReducer = (state: any, action: any) => {
 const useApi = (initAction: any, initialData = {}) => {
     const [action, setAction] = useState(() => initAction);
 
-
     const [state, dispatch] = useReducer(dataFetchReducer, {
         isLoading: initAction ? true : false,
         isError: false,
@@ -37,7 +36,6 @@ const useApi = (initAction: any, initialData = {}) => {
 
     useEffect(() => {
         let didCancel = false;
-
 
         const fetchData = async () => {
             if (!!action) {

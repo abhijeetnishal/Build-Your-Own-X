@@ -1,8 +1,18 @@
 import request from "../request";
 
-const getDetails = (token: string) => {
-  request({
-    url: `/api/v1/user/details`,
+const getFollowers = (userId: string, token: string) => {
+  return request({
+    url: `/api/v1/user/follower/${userId}`,
+    method: "GET",
+    headers: {
+      "x-auth-token": token,
+    },
+  });
+};
+
+const getFollowings = (userId: string, token: string) => {
+  return request({
+    url: `/api/v1/user/following/${userId}`,
     method: "GET",
     headers: {
       "x-auth-token": token,
@@ -11,7 +21,8 @@ const getDetails = (token: string) => {
 };
 
 const ProfileService = {
-  getDetails,
+  getFollowers,
+  getFollowings,
 };
 
 export default ProfileService;

@@ -5,84 +5,75 @@ import DialogComponent from "@/components/DialogComponent";
 import { useRecoilValue } from "recoil";
 import { profileAtom } from "@/state/profileAtom";
 import PostLoader from "@/components/Loaders/PostLoader";
+import useApi from "@/hooks/useApi";
+import { authAtom } from "@/state/authAtom";
+import ProfileService from "@/httpService/ProfileService";
+import Image from "next/image";
 
 function Page() {
   const profile = useRecoilValue(profileAtom);
+  const token = useRecoilValue(authAtom);
 
   const [btnName, setBtnName] = useState<string>("followers");
 
   const [userFollowers, setUserFollowers] = useState<Array<Object>>([]);
-  const [userFollowing, setUserFollowing] = useState<Array<Object>>([]);
+  const [userFollowings, setUserFollowings] = useState<Array<Object>>([]);
   const [isFollowBtnClicked, setIsFollowBtnClicked] = useState<boolean>(false);
   const [btnIndex, setBtnIndex] = useState<string>("");
-  const [isFollowersLoading, setIsFollowerLoading] = useState<boolean>(false);
-  const [isFollowingLoading, setIsFollowingLoading] = useState<boolean>(false);
 
-  const followBtnClickFunc = async (
-    followerId: string,
-    followingId: string
-  ) => {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_HOST}/api/users/follower-following/add`,
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          followerId: followerId,
-          followingId: followingId,
-        }),
+  const [
+    {
+      data: followersData,
+      isLoading: isFollowersDataLoading,
+      isError: isFollowersDataError,
+    },
+    getFollowersApi,
+  ] = useApi(null);
+
+  const [
+    {
+      data: followingsData,
+      isLoading: isFollowingsDataLoading,
+      isError: isFollowingsDataError,
+    },
+    getFollowingsApi,
+  ] = useApi(null);
+
+  useEffect(() => {
+    if (profile && profile.userId) {
+      getFollowersApi(
+        () => () => ProfileService.getFollowers(profile.userId, token)
+      );
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (followersData && followersData.code) {
+      const { code, data: result } = followersData;
+
+      if (code === 200) {
+        setUserFollowers(result);
       }
-    );
-    setIsFollowBtnClicked(!isFollowBtnClicked);
-
-    if (response.ok) {
     }
-  };
+  }, [followersData, isFollowersDataError]);
 
   useEffect(() => {
-    async function getuserFollowers() {
-      setIsFollowerLoading(true);
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST}/api/users/profile/follower-list`,
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+    if (profile && profile.userId) {
+      getFollowingsApi(
+        () => () => ProfileService.getFollowings(profile.userId, token)
       );
-
-      const followers = await response.json();
-      setUserFollowers(followers.data);
-      setIsFollowerLoading(false);
     }
-    getuserFollowers();
-  }, []);
+  }, [token]);
 
   useEffect(() => {
-    async function getuserFollowing() {
-      setIsFollowingLoading(true);
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST}/api/users/profile/following-list`,
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+    if (followingsData && followingsData.code) {
+      const { code, data: result } = followingsData;
 
-      const following = await response.json();
-      setUserFollowing(following.data);
-      setIsFollowingLoading(false);
+      if (code === 200) {
+        setUserFollowings(result);
+      }
     }
-    getuserFollowing();
-  }, []);
+  }, [followingsData, isFollowingsDataError]);
 
   return (
     <main className="w-full h-[100dvh] bg-black text-white flex flex-col">
@@ -92,7 +83,7 @@ function Page() {
       <article className="w-full h-full flex flex-col">
         <section className="w-full h-[70px] flex flex-row justify-center items-center pl-[8px]">
           <figure className="pr-[8px]">
-            <img className="w-[40px] h-[40px]" src={userIcon.src} alt="" />
+            <Image width={40} height={40} src={userIcon.src} alt="" />
           </figure>
           <section className="text-white font-bold text-[24px]">
             {profile.userName}
@@ -134,37 +125,33 @@ function Page() {
         </section>
         {btnName === "followers" ? (
           <section className="w-full h-[600px] flex flex-col overflow-x-auto">
-            {!isFollowersLoading ? (
-              userFollowers?.map((follower: any, index) => (
+            {!isFollowersDataLoading ? (
+              userFollowers &&
+              userFollowers.map((follower: any, index) => (
                 <section
-                  key={index}
+                  key={follower._id}
                   className="w-full h-[40px] flex flex-row items-center px-[32px] my-[10px]"
                 >
                   <section className="w-full flex flex-row">
                     <figure className="pr-[8px]">
-                      <img
-                        className="w-[35px] h-[35px]"
-                        src={userIcon.src}
-                        alt=""
-                      />
+                      <Image width={35} height={35} src={userIcon.src} alt="" />
                     </figure>
                     <section className="text-white font-semibold text-[20px]">
-                      {follower.userDetails.userName}
+                      {follower.userName}
                     </section>
                   </section>
                   <button
                     onClick={() => {
-                      followBtnClickFunc(
-                        follower.userDetails._id,
-                        follower.userId
-                      );
-                      setBtnIndex(follower.userDetails._id);
+                      // followBtnClickFunc(
+                      //   follower.userDetails._id,
+                      //   follower.userId
+                      // );
+                      // setBtnIndex(follower.userDetails._id);
                     }}
                     className="w-[200px] h-[30px] border rounded-[20px]"
                   >
                     <section className="font-semibold text-[18px]">
-                      {isFollowBtnClicked &&
-                      btnIndex === follower.userDetails._id
+                      {isFollowBtnClicked && btnIndex === follower._id
                         ? "Following"
                         : "Follow"}
                     </section>
@@ -179,19 +166,16 @@ function Page() {
           </section>
         ) : (
           <section className="w-full h-[600px] flex flex-col overflow-x-auto">
-            {!isFollowingLoading ? (
-              userFollowing?.map((following: any, index) => (
+            {!isFollowingsDataLoading ? (
+              userFollowings &&
+              userFollowings?.map((following: any, index) => (
                 <section
-                  key={index}
+                  key={following._id}
                   className="w-full h-[40px] flex flex-row items-center px-[32px] my-[10px]"
                 >
                   <section className="w-full flex flex-row">
                     <figure className="pr-[8px]">
-                      <img
-                        className="w-[35px] h-[35px]"
-                        src={userIcon.src}
-                        alt=""
-                      />
+                      <Image width={35} height={35} src={userIcon.src} alt="" />
                     </figure>
                     <section className="text-white font-semibold text-[20px]">
                       {following.userName}
