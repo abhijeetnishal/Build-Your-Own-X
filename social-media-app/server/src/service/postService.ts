@@ -115,10 +115,8 @@ const saveSchedulePost = (data: object) => {
 };
 
 const producePostToKafka = async (post: Post) => {
-  const prod = producer;
-
-  const message = { "post": post };
-  await prod.produce("schedule_post", JSON.stringify(message));
+  const message = { post: JSON.stringify(post) };
+  await producer.produce("schedule_post", message);
 };
 
 const updatePost = (query: Object, updateData: Object) => {
