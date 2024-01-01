@@ -19,6 +19,8 @@ import ReplyTweetIcon from "@/icons/Reply";
 import DeleteIcon from "@/icons/Delete";
 import EditIcon from "@/icons/Edit";
 import { PostDetails } from "@/types/post";
+import TimerIcon from "@/icons/Timer";
+import SchedulePostModal from "@/components/Modals/SchedulePostModal";
 
 function Page() {
   const token = useRecoilValue(authAtom);
@@ -33,6 +35,7 @@ function Page() {
     postDetails: {
       _id: "",
       content: "",
+      time: "",
     },
   });
 
@@ -43,9 +46,20 @@ function Page() {
   const [posts, setPosts] = useState<Array<Object>>([]);
 
   // Custom hooks for APIs
-  const [{}, createPostApi] = useApi(null);
   const [{}, deletePostApi] = useApi(null);
   const [{}, updatedPostApi] = useApi(null);
+
+  const [
+    {
+      data: createPostData,
+      isLoading: isCreatePostLoading,
+      isError: isCreatePostError,
+    },
+    createPostApi,
+  ] = useApi(null);
+
+  const [{}, schedulePost] = useApi(null);
+
   const [
     {
       data: userPostsData,
@@ -54,6 +68,7 @@ function Page() {
     },
     getUserPostsApi,
   ] = useApi(null);
+
   const [
     {
       data: followingUsersPostsData,
@@ -100,25 +115,56 @@ function Page() {
     }
   }, [followingUsersPostsData, isFollowingUsersPostsError]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = (type: string, postDetails: PostDetails) => {
     setPostContent("");
 
-    const newPost = {
-      content: postContent,
-      author: {
-        _id: profile.userId,
-        name: profile.userName,
-      },
-    };
+    if (type === "scheduled") {
+      const scheduledPost = {
+        content: postDetails.content,
+        time: postDetails.time,
+        author: {
+          _id: profile.userId,
+          name: profile.userName,
+        },
+      };
+      setShowModal({ ...showModal, status: false });
 
-    setPosts([newPost, ...userPosts]);
-    setUserPosts([newPost, ...userPosts]);
+      schedulePost(
+        () => () =>
+          PostService.schedulePost(
+            profile.userId,
+            { postDetails: scheduledPost },
+            token
+          )
+      );
+    } else {
+      const newPost = {
+        content: postContent,
+        author: {
+          _id: profile.userId,
+          name: profile.userName,
+        },
+      };
 
-    createPostApi(
-      () => () =>
-        PostService.createPost(profile.userId, { postDetails: newPost }, token)
-    );
+      createPostApi(
+        () => () =>
+          PostService.createPost(
+            profile.userId,
+            { postDetails: newPost },
+            token
+          )
+      );
+    }
   };
+
+  useEffect(() => {
+    if (createPostData && createPostData.code) {
+      const { code } = createPostData;
+      if (code === 200) {
+        window.location.reload();
+      }
+    }
+  }, [createPostData, isCreatePostError]);
 
   const onSubmit = (postDetails: PostDetails, postContent: string) => {
     setShowModal({ ...showModal, status: false });
@@ -231,12 +277,24 @@ function Page() {
               <button className="pr-[10px]">
                 <ImageIcon />
               </button>
-              <button className="pl-[10px] pr-[50px]">
+              <button className="px-[10px]">
                 <VideoIcon />
               </button>
               <button
+                className="pr-[50px]"
+                onClick={() =>
+                  setShowModal({
+                    ...showModal,
+                    type: "post",
+                    status: true,
+                  })
+                }
+              >
+                <TimerIcon />
+              </button>
+              <button
                 disabled={!postContent?.length}
-                onClick={handleSubmit}
+                onClick={() => handleSubmit("normal", {} as PostDetails)}
                 className="w-[80px] h-[30px] border rounded-[20px] bg-blue-500 disabled:bg-gray-600 outline-none"
               >
                 <section className="text-[15px] font-semibold text-white">
@@ -338,6 +396,18 @@ function Page() {
               ))
             )}
           </section>
+
+          {showModal.type === "post" && showModal.status && (
+            <SchedulePostModal
+              onCancel={() =>
+                setShowModal({
+                  ...showModal,
+                  status: false,
+                })
+              }
+              onSubmit={handleSubmit}
+            />
+          )}
 
           {showModal.type === "delete" && showModal.status && (
             <DeleteModal

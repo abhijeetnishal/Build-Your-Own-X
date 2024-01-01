@@ -31,6 +31,17 @@ const createPost = (userId: string, data: object, token: string) => {
   });
 };
 
+const schedulePost = (userId: string, data: object, token: string) => {
+  return request({
+    url: `/api/v1/post/schedule/${userId}`,
+    method: "POST",
+    data: data,
+    headers: {
+      "x-auth-token": token,
+    },
+  });
+};
+
 const updatePost = (postId: string, payload: Object, token: string) => {
   return request({
     url: `/api/v1/post/${postId}`,
@@ -56,6 +67,7 @@ const PostService = {
   getUserPosts,
   getFollowingUsersPosts,
   createPost,
+  schedulePost,
   updatePost,
   deletePost,
 };
