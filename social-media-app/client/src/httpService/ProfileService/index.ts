@@ -20,9 +20,21 @@ const getFollowings = (userId: string, token: string) => {
   });
 };
 
+const unfollowUser = (userId: string, payload: Object, token: string) => {
+  return request({
+    url: `/api/v1/user/unfollow/${userId}`,
+    method: "POST",
+    body: payload,
+    headers: {
+      "x-auth-token": token,
+    },
+  });
+};
+
 const ProfileService = {
   getFollowers,
   getFollowings,
+  unfollowUser,
 };
 
 export default ProfileService;

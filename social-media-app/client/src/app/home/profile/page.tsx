@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import userIcon from "@/../public/user-icon.png";
-import DialogComponent from "@/components/DialogComponent";
 import { useRecoilValue } from "recoil";
 import { profileAtom } from "@/state/profileAtom";
 import PostLoader from "@/components/Loaders/PostLoader";
@@ -9,6 +8,7 @@ import useApi from "@/hooks/useApi";
 import { authAtom } from "@/state/authAtom";
 import ProfileService from "@/httpService/ProfileService";
 import Image from "next/image";
+import UnfollowModal from "@/components/Modals/UnfollowModal";
 
 function Page() {
   const profile = useRecoilValue(profileAtom);
@@ -20,6 +20,8 @@ function Page() {
   const [userFollowings, setUserFollowings] = useState<Array<Object>>([]);
   const [isFollowBtnClicked, setIsFollowBtnClicked] = useState<boolean>(false);
   const [btnIndex, setBtnIndex] = useState<string>("");
+
+  const [showModal, setShowModal] = useState(false);
 
   const [
     {
@@ -37,6 +39,15 @@ function Page() {
       isError: isFollowingsDataError,
     },
     getFollowingsApi,
+  ] = useApi(null);
+
+  const [
+    {
+      data: unfollowUserData,
+      isLoading: isUnfollowDataLoading,
+      isError: isUnfollowDataError,
+    },
+    getUnfollowApi,
   ] = useApi(null);
 
   useEffect(() => {
@@ -74,6 +85,29 @@ function Page() {
       }
     }
   }, [followingsData, isFollowingsDataError]);
+
+  const onSubmit = (followerId: string) => {
+    setShowModal(false);
+
+    getUnfollowApi(
+      () => () =>
+        ProfileService.unfollowUser(
+          profile.userId,
+          { followerId: followerId },
+          token
+        )
+    );
+  };
+
+  // useEffect(() => {
+  //   if (unfollowUserData && unfollowUserData.code) {
+  //     const { code, data: result } = unfollowUserData;
+
+  //     if (code === 200) {
+  //       window.location.reload()
+  //     }
+  //   }
+  // }, [unfollowUserData, isUnfollowDataError]);
 
   return (
     <main className="w-full h-[100dvh] bg-black text-white flex flex-col">
@@ -181,18 +215,22 @@ function Page() {
                       {following.userName}
                     </section>
                   </section>
-                  <button className="w-[200px] h-[30px] border rounded-[20px]">
+                  <button
+                    className="w-[200px] h-[30px] border rounded-[20px]"
+                    onClick={() => setShowModal(true)}
+                  >
                     <section className="font-semibold text-[18px]">
-                      {
-                        <DialogComponent
-                          btnName="Following"
-                          heading={following.userName}
-                          followerId={following._id}
-                          followingId={profile.userId}
-                        />
-                      }
+                      Unfollow
                     </section>
                   </button>
+                  {showModal && (
+                    <UnfollowModal
+                      heading={following.userName}
+                      followerId={following._id}
+                      onClose={() => setShowModal(false)}
+                      onSubmit={onSubmit}
+                    />
+                  )}
                 </section>
               ))
             ) : (
