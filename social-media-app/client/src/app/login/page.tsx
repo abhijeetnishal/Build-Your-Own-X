@@ -86,7 +86,7 @@ export default function Page() {
   //useEffect executed when message changes their value.
 
   return (
-    <main className="w-full h-[calc(100dvh-30px)] flex flex-row xl:flex-row lg:flex-row md:flex-row sm:flex-col xs:flex-col">
+    <main className="w-full md:h-[calc(100dvh-30px)] sm:h-full xs:h-full flex flex-row xl:flex-row lg:flex-row md:flex-row sm:flex-col xs:flex-col">
       <ToastContainer autoClose={3000} />
 
       <section className="w-1/2 xl:w-1/2 lg:w-1/2 md:w-1/2 sm:w-full xs:w-full flex justify-center items-center bg-black">
@@ -148,7 +148,7 @@ export default function Page() {
           </section>
         </section>
         <section className="flex flex-col pt-[40px] pb-[10px]">
-          <section className="text-[15px] font-bold pb-[20px]">
+          <section className="flex justify-center text-[15px] font-bold pb-[20px]">
             Don&apos;t have an account?
           </section>
 

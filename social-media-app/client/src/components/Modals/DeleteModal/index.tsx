@@ -22,11 +22,11 @@ function DeleteModal(props: Props) {
               </button>
             </div>
 
-            <section className="w-full h-[40px] flex flex-row justify-center text-[18px] text-red-600 font-semibold px-[32px]">
+            <section className="w-full h-12 flex flex-row justify-center text-[18px] text-red-600 font-semibold px-[32px]">
               Are you sure you want to delete?
             </section>
 
-            <section className="w-full h-[70px] text-[16px] text-white px-[32px] font-normal">
+            <section className="w-full mb-2 h-[70px] text-[16px] text-white px-[32px] font-normal">
               Once you delete we will not be able to undo it. Delete only if you
               are sure about it.
             </section>
@@ -40,7 +40,7 @@ function DeleteModal(props: Props) {
                 Delete
               </button>
               <button
-                className="w-full h-[40px] mt-[8px] border text-white active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                className="w-full h-[40px] mt-[8px] border text-white active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded-3xl shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
                 type="button"
                 onClick={() => onCancel()}
               >
