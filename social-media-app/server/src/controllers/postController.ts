@@ -6,7 +6,6 @@ import {
   getPostDetails,
   updatePost,
   deletePost,
-  producePostToKafka,
   getAllFollowingUsersPosts,
   saveSchedulePost,
 } from "../service/postService";
@@ -14,7 +13,6 @@ import mongoose, { isValidObjectId } from "mongoose";
 import { getUserDetails } from "../service/userService";
 import { parseJwt } from "../helper/commonHelper";
 import redisConnect from "../infra/redis";
-import { consumer } from "../infra/kafka";
 import { task } from "../config/cronjobScheduler";
 
 const getUserPosts = asyncMiddleware(
@@ -229,14 +227,6 @@ const schedulePost = asyncMiddleware(
           } else {
             const scheduledPost = await saveSchedulePost(postDetails);
             task.start();
-            // await producePostToKafka(postDetails);
-
-            // const messages = await consumer.consume({
-            //   consumerGroupId: "group_1",
-            //   instanceId: "instance_1",
-            //   topics: ["schedule_post"],
-            //   autoOffsetReset: "earliest",
-            // });
 
             return next({
               statusCode: 200,

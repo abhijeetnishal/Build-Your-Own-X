@@ -1,7 +1,5 @@
 import { scheduledPostSchema } from "../models/scheduledPostModel";
-import { producer } from "../infra/kafka";
 import postSchema from "../models/postModel";
-import { Post } from "post";
 import relationshipSchema from "../models/relationshipModel";
 
 const getPostDetails = (query: Object) => {
@@ -114,11 +112,6 @@ const saveSchedulePost = (data: object) => {
   );
 };
 
-const producePostToKafka = async (post: Post) => {
-  const message = { post: JSON.stringify(post) };
-  await producer.produce("schedule_post", message);
-};
-
 const updatePost = (query: Object, updateData: Object) => {
   return new Promise(
     async (resolve: (value?: any) => void, reject: (reason?: any) => void) => {
@@ -155,7 +148,6 @@ export {
   getAllFollowingUsersPosts,
   savePost,
   saveSchedulePost,
-  producePostToKafka,
   updatePost,
   deletePost,
 };
