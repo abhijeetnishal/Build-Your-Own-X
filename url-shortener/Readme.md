@@ -43,7 +43,7 @@ The app is built using the following technologies:
 ```bash
     cd server
 ```
-4. To install dependencies run the below cammand:
+4. To install dependencies run the below command:
 ```bash
     npm install
 ```
@@ -57,7 +57,7 @@ The app is built using the following technologies:
     cd ../client
 ```
 8. Create a .env file in root directory of client and copy contents of .env.example file to .env file and add your backend URL.
-9. To install dependencies run the below cammand:
+9. To install dependencies run the below command:
 ```bash
     npm install
 ```
