@@ -8,8 +8,8 @@ This is a web application for shortening URLs, created using ReactJS, NodeJS, Ex
 ## Table of Contents
 - [**Features**](#features)
 - [**Technologies**](#technologies)
-- [**Project Installation**](#project-installation)
 - [**Running the Application using docker**](#running-the-application-using-docker)
+- [**Project Installation**](#project-installation)
 - [**Usage**](#usage)
   
 <br>
@@ -27,44 +27,6 @@ The app is built using the following technologies:
 - NodeJS: A JavaScript runtime for building server-side applications.
 - ExpressJS: A lightweight framework for building web applications.
 - MongoDB: A document-oriented NoSQL database.
-
-<br>
-
-## Project Installation:
-1. Clone the repository to your local machine using:
-```bash
-    git clone https://github.com/abhijeetnishal/Build-Your-Own-X.git
-```
-2. Move to the url-shortener folder using command:
-```bash
-    cd url-shortener
-```
-3. Move to server directory:
-```bash
-    cd server
-```
-4. To install dependencies run the below command:
-```bash
-    npm install
-```
-5. Create a .env file in root directory of server and copy contents of .env.example file to .env file and add MongoDB URI to setup database.
-6. Start the server using command:
-```bash
-    npm run dev
-```
-7. Now move to client folder:
-```bash
-    cd ../client
-```
-8. Create a .env file in root directory of client and copy contents of .env.example file to .env file and add your backend URL.
-9. To install dependencies run the below command:
-```bash
-    npm install
-```
-10. start the react app using command:
-```bash
-    npm start
-```
 
 <br>
 
@@ -102,6 +64,44 @@ The app is built using the following technologies:
 10. Run a container based on your_client_image_name using below command:
 ```bash
     docker run -p 3000:3000 your_client_image_name
+```
+
+<br>
+
+## Project Installation:
+1. Clone the repository to your local machine using:
+```bash
+    git clone https://github.com/abhijeetnishal/Build-Your-Own-X.git
+```
+2. Move to the url-shortener folder using command:
+```bash
+    cd url-shortener
+```
+3. Move to server directory:
+```bash
+    cd server
+```
+4. To install dependencies run the below command:
+```bash
+    npm install
+```
+5. Create a .env file in root directory of server and copy contents of .env.example file to .env file and add MongoDB URI to setup database.
+6. Start the server using command:
+```bash
+    npm run dev
+```
+7. Now move to client folder:
+```bash
+    cd ../client
+```
+8. Create a .env file in root directory of client and copy contents of .env.example file to .env file and add your backend URL.
+9. To install dependencies run the below command:
+```bash
+    npm install
+```
+10. start the react app using command:
+```bash
+    npm start
 ```
 
 <br>
