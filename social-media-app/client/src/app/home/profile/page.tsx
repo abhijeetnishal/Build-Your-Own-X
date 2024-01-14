@@ -1,18 +1,17 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import userIcon from "@/../public/user-icon.png";
-import { useRecoilValue } from "recoil";
-import { profileAtom } from "@/state/profileAtom";
 import PostLoader from "@/components/Loaders/PostLoader";
 import useApi from "@/hooks/useApi";
-import { authAtom } from "@/state/authAtom";
 import ProfileService from "@/httpService/ProfileService";
 import Image from "next/image";
 import UnfollowModal from "@/components/Modals/UnfollowModal";
+import useAuthStore from "@/store/authStore";
+import useProfileStore from "@/store/profileStore";
 
 function Page() {
-  const profile = useRecoilValue(profileAtom);
-  const token = useRecoilValue(authAtom);
+  const token = useAuthStore((state: any) => state.authToken);
+  const profile = useProfileStore((state: any) => state.profileDetails);
 
   const [btnName, setBtnName] = useState<string>("followers");
 
@@ -88,8 +87,6 @@ function Page() {
 
   const onSubmit = (followerId: string) => {
     setShowModal(false);
-
-    
 
     getUnfollowApi(
       () => () =>

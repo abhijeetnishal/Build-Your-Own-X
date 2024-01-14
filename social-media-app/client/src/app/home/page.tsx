@@ -3,11 +3,8 @@ import React, { useState, useEffect } from "react";
 import userIcon from "@/../public/user-icon.png";
 import EditModal from "@/components/Modals/EditModal";
 import DeleteModal from "@/components/Modals/DeleteModal";
-import { useRecoilValue } from "recoil";
-import { profileAtom } from "@/state/profileAtom";
 import useApi from "@/hooks/useApi";
 import PostService from "@/httpService/PostService";
-import { authAtom } from "@/state/authAtom";
 import Image from "next/image";
 import PostLoader from "@/components/Loaders/PostLoader";
 import ImageIcon from "@/icons/Image";
@@ -21,10 +18,12 @@ import EditIcon from "@/icons/Edit";
 import { PostDetails } from "@/types/post";
 import TimerIcon from "@/icons/Timer";
 import SchedulePostModal from "@/components/Modals/SchedulePostModal";
+import useAuthStore from "@/store/authStore";
+import useProfileStore from "@/store/profileStore";
 
 function Page() {
-  const token = useRecoilValue(authAtom);
-  const profile = useRecoilValue(profileAtom);
+  const token = useAuthStore((state: any) => state.authToken);
+  const profile = useProfileStore((state: any) => state.profileDetails);
 
   const [btnName, setBtnName] = useState<string>("for-you");
   const [postContent, setPostContent] = useState<string>("");

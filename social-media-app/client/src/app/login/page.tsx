@@ -10,9 +10,6 @@ import Loading from "@/components/Loaders/ProcessingLoader";
 import useApi from "@/hooks/useApi";
 import { AuthService } from "@/httpService";
 import { setCookie } from "cookies-next";
-import { useSetRecoilState } from "recoil";
-import { profileAtom } from "@/state/profileAtom";
-import { authAtom } from "@/state/authAtom";
 import AuthSubmitButton from "@/components/AuthSubmitButton";
 import XIcon from "@/icons/X";
 import ProcessingLoader from "@/components/Loaders/ProcessingLoader";
@@ -26,9 +23,6 @@ export default function Page() {
   const [password, setPassword] = useState<string>("");
 
   const [message, setMessage] = useState<string>("");
-
-  const setProfile = useSetRecoilState(profileAtom);
-  const isAuth = useSetRecoilState(authAtom);
 
   const [isPasswordEyeBtnClicked, setIsPasswordEyeBtnClicked] = useState(false);
 
@@ -59,9 +53,6 @@ export default function Page() {
         const token = result.authToken;
 
         setCookie("token", token);
-
-        isAuth(token);
-        setProfile(result);
 
         router.replace("/home");
       } else {

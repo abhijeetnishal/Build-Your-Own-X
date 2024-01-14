@@ -1,18 +1,20 @@
 "use client";
 import getProfileDetails from "@/httpService/auth";
-import { authAtom } from "@/state/authAtom";
-import { profileAtom } from "@/state/profileAtom";
+import useAuthStore from "@/store/authStore";
+import useProfileStore from "@/store/profileStore";
 import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
-import { useSetRecoilState } from "recoil";
 
 const IsAuthenticated = (Component: any) => {
   const WrappedComponent = (props: any) => {
     const router = useRouter();
     const token = getCookie("token") as string;
-    const setProfile = useSetRecoilState(profileAtom);
-    const setAuth = useSetRecoilState(authAtom);
+
+    const setAuthToken = useAuthStore((state: any) => state.setAuthToken);
+    const setProfileDetails = useProfileStore(
+      (state: any) => state.setProfileDetails
+    );
 
     useEffect(() => {
       if (!token) {
@@ -23,11 +25,10 @@ const IsAuthenticated = (Component: any) => {
 
           if (!response.ok) {
             router.replace("/login");
-          }
-          else{
+          } else {
             const data = await response.json();
-            setAuth(token);
-            setProfile(data)
+            setAuthToken(token);
+            setProfileDetails(data);
           }
         };
         fetch();

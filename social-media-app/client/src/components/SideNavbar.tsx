@@ -3,28 +3,27 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import userIcon from "@/../public/user-icon.png";
 import { deleteCookie } from "cookies-next";
-import { useRecoilState } from "recoil";
-import { profileAtom } from "@/state/profileAtom";
-import { authAtom } from "@/state/authAtom";
 import Image from "next/image";
 import ProfileLoader from "./Loaders/ProfileLoader";
+import useAuthStore from "@/store/authStore";
+import useProfileStore from "@/store/profileStore";
 
 const SideNavbar = () => {
   const router = useRouter();
 
-  const [isAuth, setIsAuth] = useRecoilState(authAtom);
+  const setAuthToken = useAuthStore((state: any) => state.setAuthToken);
+  const setProfileDetails = useProfileStore(
+    (state: any) => state.setProfileDetails
+  );
 
-  const [profile, setProfile] = useRecoilState(profileAtom);
+  const profileDetails = useProfileStore((state: any) => state.profileDetails);
 
   const handleClick = async () => {
     deleteCookie("token");
     router.replace("/login");
 
-    setIsAuth("");
-    setProfile({
-      userId: "",
-      userName: "",
-    });
+    setAuthToken("");
+    setProfileDetails({});
   };
 
   return (
@@ -91,13 +90,13 @@ const SideNavbar = () => {
           </button>
         </section>
       </section>
-      {profile.userName ? (
+      {profileDetails.userName ? (
         <section className="w-full h-[40px] flex flex-row items-center pl-2 mb-2">
           <figure className="pr-[10px]">
             <Image width={25} height={25} src={userIcon.src} alt="" />
           </figure>
           <section className="text-white font-semibold text-[20px]">
-            {profile.userName}
+            {profileDetails.userName}
           </section>
         </section>
       ) : (
