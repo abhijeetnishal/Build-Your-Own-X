@@ -39,6 +39,7 @@ The project utilizes the following technologies:
   - **_Next.js_**: A React framework for building server-side rendered and statically generated web applications.
   - **_TypeScript_**: TypeScript is used throughout the project to ensure strong type safety and enhance the development process.
   - **_Tailwind CSS_**: Tailwind CSS is used for styling the frontend, offering a utility-first approach and speeding up the design process.
+  - **_Zustand_**: Zustand is a state management library for React, providing a simple and efficient way to manage application state.
 
 <br>
 
@@ -48,37 +49,53 @@ The project utilizes the following technologies:
 - Social login using Google
 
 ## Running the Application using docker
+
 1. Clone the repository:
+
 ```bash
    git clone https://github.com/abhijeetnishal/Build-Your-Own-X.git
 ```
+
 2. Move to the url-shortener folder using below command:
+
 ```bash
     cd url-shortener
 ```
+
 3. Move to server directory using below command:
+
 ```bash
     cd server
 ```
+
 4. Create a .env file in root directory of server and copy contents of .env.example file to .env file and add MongoDB URI to setup database.
 5. Make sure that docker is installed in your system. Run the below command to build docker image for server:
+
 ```bash
     docker build -t your_server_image_name .
 ```
+
 6. Run a container based on your_server_image_name using below command, exposing port 8080 on the host machine and mapping it to port 8080 inside the container
+
 ```bash
     docker run -p 8080:8080 your_server_image_name
 ```
+
 7. Now move to client directory using below command:
+
 ```bash
     cd ../client
 ```
+
 8. Create a .env file in root directory of client and copy contents of .env.example file to .env file and add your backend URL.
 9. Run the below command to build docker image for client:
+
 ```bash
     docker build -t your_client_image_name .
 ```
+
 10. Run a container based on your_client_image_name using below command:
+
 ```bash
     docker run -p 3000:3000 your_client_image_name
 ```
