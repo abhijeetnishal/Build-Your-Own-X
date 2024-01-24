@@ -163,42 +163,64 @@ const login = asyncMiddleware(
   }
 );
 
-const profileDetails = async (req: Request, res: Response) => {
-  try {
-    // Get access token from request header
-    const token = req.header("x-auth-token");
+const profileDetails = asyncMiddleware(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Get access token from request header
+      const token = req.header("x-auth-token");
 
-    // Check token exists or not
-    if (token) {
-      const { userId } = parseJwt(token);
+      // Check token exists or not
+      if (token) {
+        const { userId } = parseJwt(token);
 
-      if (userId) {
-        // Check if Object id is valid or not
-        if (isValidObjectId(userId)) {
-          const userExist = await getUserDetails({ _id: userId });
+        if (userId) {
+          // Check if Object id is valid or not
+          if (isValidObjectId(userId)) {
+            const userExist = await getUserDetails({ _id: userId });
 
-          // Check if user registered or not
-          if (userExist) {
-            return res.status(200).json({
-              userId: userExist._id,
-              userName: userExist.userName,
-            });
+            // Check if user registered or not
+            if (userExist) {
+              return next({
+                success: true,
+                statusCode: 200,
+                data: {
+                  userId: userExist._id,
+                  userName: userExist.userName,
+                },
+                message: "authenticated user",
+              });
+            } else {
+              return next({
+                statusCode: 401,
+                message: "User doesn't exist",
+              });
+            }
           } else {
-            return res.status(400).json({ message: "User doesn't exist" });
+            return next({
+              statusCode: 401,
+              message: "Invalid mongo object id",
+            });
           }
         } else {
-          return res.status(400).json({ message: "Invalid mongo object id" });
+          return next({
+            statusCode: 401,
+            message: "Invalid token",
+          });
         }
       } else {
-        return res.status(401).json("Invalid token");
+        return next({
+          statusCode: 401,
+          message: "Token not present",
+        });
       }
-    } else {
-      return res.status(401).json({ message: "Token is not present" });
+    } catch (error) {
+      return next({
+        statusCode: 500,
+        message: error.message,
+      });
     }
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
   }
-};
+);
 
 /*
 1. Get all followee Id's from relationship collection using follower Id(user Id)
