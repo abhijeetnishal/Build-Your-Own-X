@@ -6,7 +6,6 @@ import cutEye from "@/../public/cut-eye-image.png";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Loading from "@/components/Loaders/ProcessingLoader";
 import { validatePassword } from "@/utils";
 import useApi from "@/hooks/useApi";
 import { AuthService } from "@/httpService";
