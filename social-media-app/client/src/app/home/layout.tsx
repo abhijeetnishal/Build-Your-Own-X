@@ -1,5 +1,3 @@
-"use client";
-import IsAuthenticated from "@/components/ProtectedRoute";
 import SideNavbar from "@/components/SideNavbar";
 import SidePanel from "@/components/SidePanel";
 
@@ -18,4 +16,4 @@ function HomePageLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default IsAuthenticated(HomePageLayout);
+export default HomePageLayout;
