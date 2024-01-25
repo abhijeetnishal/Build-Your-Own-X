@@ -1,6 +1,11 @@
 import { create } from "zustand";
 
-const useAuthStore = create((set) => ({
+interface AuthStoreState {
+  authToken: string;
+  setAuthToken: Function
+}
+
+const useAuthStore = create<AuthStoreState>((set) => ({
   authToken: "",
 
   setAuthToken: (token: string) => set({ authToken: token }),

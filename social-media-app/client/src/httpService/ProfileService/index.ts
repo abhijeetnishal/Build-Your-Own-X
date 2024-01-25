@@ -1,5 +1,15 @@
 import request from "../request";
 
+const getProfileDetails = (token: string)=>{
+  return request({
+    url: `/api/v1/user/details`,
+    method: "GET",
+    headers: {
+      "x-auth-token": token,
+    },
+  });
+}
+
 const getFollowers = (userId: string, token: string) => {
   return request({
     url: `/api/v1/user/follower/${userId}`,
@@ -32,6 +42,7 @@ const unfollowUser = (userId: string, payload: Object, token: string) => {
 };
 
 const ProfileService = {
+  getProfileDetails,
   getFollowers,
   getFollowings,
   unfollowUser,

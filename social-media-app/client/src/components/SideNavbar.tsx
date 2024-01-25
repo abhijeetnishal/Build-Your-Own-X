@@ -11,12 +11,12 @@ import useProfileStore from "@/store/profileStore";
 const SideNavbar = () => {
   const router = useRouter();
 
-  const setAuthToken = useAuthStore((state: any) => state.setAuthToken);
+  const setAuthToken = useAuthStore((state) => state.setAuthToken);
   const setProfileDetails = useProfileStore(
-    (state: any) => state.setProfileDetails
+    (state) => state.setProfileDetails
   );
 
-  const profileDetails = useProfileStore((state: any) => state.profileDetails);
+  const profileDetails = useProfileStore((state) => state.profileDetails);
 
   const handleClick = async () => {
     deleteCookie("token");

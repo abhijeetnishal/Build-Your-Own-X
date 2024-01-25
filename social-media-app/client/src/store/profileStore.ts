@@ -1,6 +1,11 @@
 import { create } from "zustand";
 
-const useProfileStore = create((set) => ({
+interface profileStoreState{
+  profileDetails: any;
+  setProfileDetails: Function;
+}
+
+const useProfileStore = create<profileStoreState>((set) => ({
   profileDetails: {},
   setProfileDetails: (userDetails: Object) => set({ profileDetails: userDetails }),
 }));

@@ -10,8 +10,8 @@ import useAuthStore from "@/store/authStore";
 import useProfileStore from "@/store/profileStore";
 
 function Page() {
-  const token = useAuthStore((state: any) => state.authToken);
-  const profile = useProfileStore((state: any) => state.profileDetails);
+  const token = useAuthStore((state) => state.authToken);
+  const profile = useProfileStore((state) => state.profileDetails);
 
   const [btnName, setBtnName] = useState<string>("followers");
 
