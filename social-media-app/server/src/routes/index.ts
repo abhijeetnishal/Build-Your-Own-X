@@ -7,10 +7,10 @@ import postRouter from "./post";
 const app = express();
 
 // User router  
-app.use('/api/v1/user', userRouter);
+app.use('/api/v1/users', userRouter);
 
 // Post router
-app.use('/api/v1/post', postRouter);
+app.use('/api/v1/posts', postRouter);
 
 // Error middleware
 app.use(errorMiddleware);
