@@ -18,9 +18,9 @@ userRouter.post("/login", userController_1.login);
 // Create an endpoint to get profile details.
 userRouter.get("/details", auth_1.default, userController_1.profileDetails);
 // Create an endpoint to get followers list.
-userRouter.get("/follower/:id", auth_1.default, userController_1.followerDetails);
+userRouter.get("/followers/:id", auth_1.default, userController_1.followerDetails);
 // Create an endpoint to get following list.
-userRouter.get("/following/:id", auth_1.default, userController_1.followingDetails);
+userRouter.get("/followings/:id", auth_1.default, userController_1.followingDetails);
 // Create an endpoint to add follower.
 userRouter.post("/follow", auth_1.default, userController_1.addFollower);
 // Create an endpoint to remove follower.

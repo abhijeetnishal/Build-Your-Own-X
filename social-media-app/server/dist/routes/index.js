@@ -10,9 +10,9 @@ const post_1 = __importDefault(require("./post"));
 // Create an express instance
 const app = (0, express_1.default)();
 // User router  
-app.use('/api/v1/user', user_1.default);
+app.use('/api/v1/users', user_1.default);
 // Post router
-app.use('/api/v1/post', post_1.default);
+app.use('/api/v1/posts', post_1.default);
 // Error middleware
 app.use(error_1.default);
 module.exports = app;
