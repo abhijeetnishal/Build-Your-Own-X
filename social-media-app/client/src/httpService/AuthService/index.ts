@@ -13,6 +13,7 @@ const login = (data: Object) => {
     url: "/api/v1/users/login",
     method: "POST",
     data: data,
+    credentials: "include",
   });
 };
 
