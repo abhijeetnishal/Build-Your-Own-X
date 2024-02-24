@@ -2,7 +2,7 @@ import request from "../request";
 
 const getUserPosts = (userId: string, token: string) => {
   return request({
-    url: `/api/v1/post/${userId}`,
+    url: `/api/v1/posts/${userId}`,
     method: "GET",
     headers: {
       "x-auth-token": token,
@@ -12,7 +12,7 @@ const getUserPosts = (userId: string, token: string) => {
 
 const getFollowingUsersPosts = (userId: string, token: string) => {
   return request({
-    url: `/api/v1/post/following-users/${userId}`,
+    url: `/api/v1/posts/following-users/${userId}`,
     method: "GET",
     headers: {
       "x-auth-token": token,
@@ -22,7 +22,7 @@ const getFollowingUsersPosts = (userId: string, token: string) => {
 
 const createPost = (userId: string, data: object, token: string) => {
   return request({
-    url: `/api/v1/post/${userId}`,
+    url: `/api/v1/posts/${userId}`,
     method: "POST",
     data: data,
     headers: {
@@ -33,7 +33,7 @@ const createPost = (userId: string, data: object, token: string) => {
 
 const schedulePost = (userId: string, data: object, token: string) => {
   return request({
-    url: `/api/v1/post/schedule/${userId}`,
+    url: `/api/v1/posts/schedule/${userId}`,
     method: "POST",
     data: data,
     headers: {
@@ -44,7 +44,7 @@ const schedulePost = (userId: string, data: object, token: string) => {
 
 const updatePost = (postId: string, payload: Object, token: string) => {
   return request({
-    url: `/api/v1/post/${postId}`,
+    url: `/api/v1/posts/${postId}`,
     method: "PATCH",
     data: payload,
     headers: {
@@ -55,7 +55,7 @@ const updatePost = (postId: string, payload: Object, token: string) => {
 
 const deletePost = (postId: string, token: string) => {
   return request({
-    url: `/api/v1/post/${postId}`,
+    url: `/api/v1/posts/${postId}`,
     method: "DELETE",
     headers: {
       "x-auth-token": token,
