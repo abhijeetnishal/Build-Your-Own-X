@@ -20,8 +20,10 @@ const isProduction = process.env.NODE_ENV === "production";
 
 // CORS Configuration
 const corsOptions = {
-  credentials: true,
-  origin: isProduction ? [process.env.CLIENT_URL] : "*",
+  origin: isProduction ? process.env.CLIENT_URL : "*",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  preflightContinue: false,
+  optionsSuccessStatus: 200,
 };
 
 // This will allow the user in the frontend to consume the APIs that you have created without any problem.

@@ -11,8 +11,6 @@ import {
 } from "../service/postService";
 import mongoose, { isValidObjectId } from "mongoose";
 import { getUserDetails } from "../service/userService";
-import { parseJwt } from "../helper/commonHelper";
-import redisConnect from "../infra/redis";
 import { task } from "../config/cronjobScheduler";
 
 const getUserPosts = asyncMiddleware(
@@ -27,49 +25,15 @@ const getUserPosts = asyncMiddleware(
 
         // Check if user registered or not
         if (userExist) {
-          // Get client from redisConnect.ts file
-          const client = await redisConnect();
+          // Get user posts
+          const userPosts = await getAllPosts({ "author._id": userId });
 
-          // Using caching for all posts
-          // Check if value is present in cache or not
-          const dataCached = await client.get("user_posts_cache_" + userId);
-
-          // If value is present(cache hit)
-          if (dataCached) {
-            // Parse the value from string to (arr of obj)
-            const cachedData = JSON.parse(dataCached);
-
-            // Return the cached data instead from DB
-            return next({
-              success: true,
-              statusCode: 200,
-              data: cachedData,
-              message: "User posts",
-            });
-          } else {
-            // Get user posts
-            const userPosts = await getAllPosts({ "author._id": userId });
-
-            if (userPosts.length) {
-              // Store the data in Redis(key, value) with options
-              await client.set(
-                "user_posts_cache_" + userId,
-                JSON.stringify(userPosts),
-                {
-                  //set expiration time
-                  EX: 300,
-                  //not exist
-                  NX: true,
-                }
-              );
-            }
-            next({
-              success: true,
-              statusCode: 200,
-              data: userPosts,
-              message: "Users posts",
-            });
-          }
+          return next({
+            success: true,
+            statusCode: 200,
+            data: userPosts,
+            message: "Users posts",
+          });
         } else {
           return next({
             statusCode: 400,
@@ -168,12 +132,6 @@ const createPost = asyncMiddleware(
             // Create post
             const newPost = await savePost(postDetails);
 
-            // Get client from redisConnect.ts file
-            const client = await redisConnect();
-
-            // Invalidate cache
-            client.del("user_posts_cache_" + userId);
-
             return next({
               success: true,
               statusCode: 200,
@@ -270,10 +228,6 @@ const updateSpecificPost = asyncMiddleware(
 
           // Check if post exists or not
           if (postExist) {
-            // Get access token from request header
-            const token = req.header("x-auth-token");
-            const { userId } = parseJwt(token);
-
             //get data from client
             const { content } = req.body;
 
@@ -284,12 +238,6 @@ const updateSpecificPost = asyncMiddleware(
 
             //update post using postId
             const data = await updatePost({ _id: postId }, updatedData);
-
-            //get client from redisConnect.ts file
-            const client = await redisConnect();
-
-            //invalidate cache
-            client.del("user_posts_cache_" + userId);
 
             return next({
               statusCode: 200,
@@ -338,18 +286,8 @@ const deleteSpecificPost = asyncMiddleware(
 
           // Check if post exists or not
           if (postExist) {
-            // Get access token from request header
-            const token = req.header("x-auth-token");
-            const { userId } = parseJwt(token);
-
             //update post using postId
             const data = await deletePost({ _id: postId });
-
-            //get client from redisConnect.ts file
-            const client = await redisConnect();
-
-            //invalidate cache
-            client.del("user_posts_cache_" + userId);
 
             return next({
               statusCode: 200,
