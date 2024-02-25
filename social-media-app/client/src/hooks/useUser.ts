@@ -12,7 +12,7 @@ interface userObject {
   token: string;
 }
 
-export default function useUser({ redirectTo = "", token }: userObject ) {
+export default function useUser({ redirectTo = "", token }: userObject) {
   const router = useRouter();
 
   const isAuth = useAuthStore((state) => state.authToken);
@@ -30,7 +30,7 @@ export default function useUser({ redirectTo = "", token }: userObject ) {
 
     if (user && user.code) {
       const { data: userDetails, code } = user;
-      
+
       if (code === 200) {
         setProfile(userDetails);
       } else {

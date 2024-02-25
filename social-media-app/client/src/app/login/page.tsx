@@ -8,13 +8,16 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useApi from "@/hooks/useApi";
 import { AuthService } from "@/httpService";
-import { getCookie, setCookie } from "cookies-next";
+import { setCookie } from "cookies-next";
 import AuthSubmitButton from "@/components/AuthSubmitButton";
 import XIcon from "@/icons/X";
 import ProcessingLoader from "@/components/Loaders/ProcessingLoader";
+import useProfileStore from "@/store/profileStore";
 
 export default function Page() {
   const router = useRouter();
+
+  const setProfile = useProfileStore((state) => state.setProfileDetails);
 
   const [{ data, isLoading, isError }, authApi] = useApi(null);
 
@@ -52,6 +55,10 @@ export default function Page() {
         const token = result.authToken;
 
         setCookie("token", token);
+        setProfile({
+          userId: result.userId,
+          userName: result.userName,
+        });
 
         router.replace("/home");
       } else {
